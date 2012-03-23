@@ -1,0 +1,140 @@
+import string
+class DoNothingApp(object):
+    def do(in_data):
+        return in_data
+
+class ActivityCfg(object):
+    def __init__(self, *args, **kwargs):
+        self.name = kwargs.get('name')
+        self.app = kwargs.get('app', DoNothingApp())
+
+class Activity(object):
+    def __init__(self, *args, **kwargs):
+        self.activity_cfg = kwargs.get('activity_cfg')
+        self.state = kwargs.get('state')
+
+    def app_run(in_data):
+        self.out_data = self.activity_cfg.do(in_data)
+        return self.out_data
+
+    def activate():
+        self.state = 'activated'
+
+    def complete():
+        self.state = 'completed'
+
+class StepMatcher(object):
+    
+    def __init__(self, *args, **kwargs):
+        self.steps = set()
+        for s in args:
+            self.steps.add(s)
+        
+
+    def match(self, steps):
+        raise Exception, 'Implement me!'
+
+    def __repr__(self):
+        return repr(self.steps)
+
+    
+'''
+Input for activities
+'''
+class All(StepMatcher):
+    def match(self, steps):
+        #return True, that means steps must be the subsets of self.steps.
+        if self.steps.issubset(steps):
+            return True
+        return False
+        
+
+class Any(StepMatcher):
+    def match(self, steps):
+        if self.steps.isdisjoint(steps):
+            return False
+        else:
+            return True
+        
+
+'''
+Output for activities
+'''
+class Next(object):
+    def __init__(self, *args, **kwarg):
+        self._choices = set([])
+        for s in args:
+            self._choices.add(s)
+
+    def choices(self):
+        return self._choices
+
+    def __repr__(self):
+        return repr(self._choices)
+
+
+def always_pass(test_data=None):
+    return True
+
+class Route(object):
+    test_fun = always_pass
+    _in = None
+    _out = None
+
+    def input( self, the_in = None):
+        if the_in is not None:
+            self._in= the_in
+            return self
+        else:
+            return self._in
+
+    def __repr__(self):
+        return 'in: %s, out: %s' % (self._in, self._out)
+
+    def output(self, the_out = None):
+        if the_out is not None:
+            self._out = the_out
+            return self
+        else:
+            return self._out
+
+    def match_step(self, steps):
+        return self._in.match(steps)
+
+    def match_data(self, data):
+        return self.test_fun(data)
+
+    def match(self, steps, data):
+        return self.match_step(steps) and self.match_data(data)
+
+
+class RouteMatcher(object):
+    
+    def __init__(self, *args, **kwargs):
+        self.routes = []
+        for r in args:
+            self.routes.append(r)
+
+    def match_step(self, steps):
+        ret = set()
+        for r in self.routes:
+            if r.match_step(steps):
+                ret.update(r.output().choices())
+        return ret
+
+    def match(self, steps, data):
+        ret = set()
+        for r in self.routes:
+            if r.match(steps, data):
+                ret.update(r.output().choices())
+        return ret
+
+    def __repr__(self):
+        l = []
+        for r in self.routes:
+            l.append(repr(r))
+
+        return string.join(l, '\n')
+
+
+        
