@@ -6,7 +6,7 @@ Replace these with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from warehouse.wf.statemachine import Route, RouteMatcher, Any, Next
+from warehouse.wf.statemachine import Route, RouteMatcher, Any, Next, All
 
 class RouterMatcherTest(TestCase):
     matcher = None
@@ -31,7 +31,7 @@ class RouterMatcherTest(TestCase):
         
         
 
-    def test_wf_single_next(self):
+    def test_wf_single_out(self):
         self.matcher = RouteMatcher(
             Route().input( Any('start') ).output( Next('step1')  ),
             Route().input( Any('step1') ).output( Next('step2')  ),
@@ -50,19 +50,38 @@ class RouterMatcherTest(TestCase):
         self.out_should_not_match( ['start'], ['step3'])
         self.out_should_not_match( ['start'], ['end'])
         
-    def test_wf_multi_next(self):
+    def test_wf_multi_out(self):
         self.matcher = RouteMatcher(
             Route().input( Any('start') ).output( Next('step1', 'step1.1', 'step1.2')),
             Route().input( Any('step1') ).output( Next('step2', 'step2.1')),
             Route().input( Any('step1.1') ).output( Next('step2', 'end')),
-            Route().input( Any('step1.2') ).output( Next('step2', 'end')),
+            Route().input( Any('step1.2') ).output( Next('step2.1', 'end')),
             Route().input( Any('step2') ).output( Next('end') ),
             Route().input( Any('step2.1') ).output( Next('end') ),
         )
 
         self.out_should_exact_match( ['start'], ['step1', 'step1.1', 'step1.2'])
         self.out_should_exact_match( ['step1'], ['step2.1', 'step2'])
+        self.out_should_exact_match( ['step1.1'], ['step2', 'end'])
+        self.out_should_exact_match( ['step1.2'], ['step2.1', 'end'])
         self.out_should_exact_match( ['step2'], ['end'])
         self.out_should_exact_match( ['step2.1'], ['end'])
+
+
+    def test_wf_multi_in_all(self):
+        self.matcher = RouteMatcher(
+            Route().input( Any('start') ).output( Next('step1', 'step1.1', 'step1.2', 'step1.3')),
+            Route().input( All('step1.1', 'step1.2') ).output( Next('step2')),
+            Route().input( Any('step1', 'step1.3') ).output( Next('step2')),
+            Route().input( Any('step2') ).output( Next('end')),
+        )
+
+        self.out_should_exact_match( ['start'], ['step1', 'step1.1', 'step1.2', 'step1.3'])
+        self.out_should_exact_match( ['step1.1', 'step1.2'], ['step2'])
+        self.out_should_exact_match( ['step1.3'], ['step2'])
+        self.out_should_exact_match( ['step1'], ['step2'])
+        self.out_should_exact_match( ['step2'], ['end'])
+
+        print self.matcher
 
 
