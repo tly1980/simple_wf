@@ -35,7 +35,10 @@ class StepMatcher(object):
         raise Exception, 'Implement me!'
 
     def __repr__(self):
-        return repr(self.steps)
+        return '%s:%s' % ( self.__class__.__name__ , repr ( list(self.steps)) )
+
+    def __iter__(self):
+        return self.steps.__iter__()
 
     
 '''
@@ -55,7 +58,7 @@ class Any(StepMatcher):
             return False
         else:
             return True
-        
+    
 
 '''
 Output for activities
@@ -70,16 +73,19 @@ class Next(object):
         return self._choices
 
     def __repr__(self):
-        return repr(self._choices)
-
+        return '%s:%s' % ( self.__class__.__name__ , repr ( list( self._choices)) )
 
 def always_pass(test_data=None):
     return True
 
+
 class Route(object):
-    test_fun = always_pass
-    _in = None
-    _out = None
+
+    def __init__(self):
+        self.test_fun = always_pass
+        self._in = None
+        self._out = None
+
 
     def input( self, the_in = None):
         if the_in is not None:
@@ -98,6 +104,11 @@ class Route(object):
         else:
             return self._out
 
+    def involves(self, step):
+        if step in self._in:
+            return True
+        return False
+
     def match_step(self, steps):
         return self._in.match(steps)
 
@@ -106,6 +117,12 @@ class Route(object):
 
     def match(self, steps, data):
         return self.match_step(steps) and self.match_data(data)
+
+    def test(self, test_fun=None):
+        if test_fun is None:
+            return self.test_fun
+        self.test_fun = test_fun
+        return self
 
 
 class RouteMatcher(object):
@@ -122,12 +139,24 @@ class RouteMatcher(object):
                 ret.update(r.output().choices())
         return ret
 
-    def match(self, steps, data):
+    def match(self, steps, data = None):
         ret = set()
         for r in self.routes:
             if r.match(steps, data):
                 ret.update(r.output().choices())
         return ret
+
+    def involve_decendants(self, step, ret=set([])):
+        for r in self.routes:
+            if r.involves( step ):
+                nexts = r.output().choices()
+                s_diff = nexts.difference(ret)
+                if len(s_diff):
+                    ret.update(s_diff)
+                for s in s_diff:
+                    ret2 = self.involve_decendants(s, ret)
+        return ret
+
 
     def __repr__(self):
         l = []
