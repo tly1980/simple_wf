@@ -40,11 +40,24 @@ class StepMatcher(object):
     def __iter__(self):
         return self.steps.__iter__()
 
+    def __eq__(self, other):
+        if self.__class__ != other.__class__:
+            return False
+        return self.steps == other.steps
+
+    def __ne__(self, other):
+        if self.__class__ != other.__class__:
+            return True
+
+        return self.steps != other.steps
+
+        
+
     
 '''
 Input for activities
 '''
-class All(StepMatcher):
+class Exact(StepMatcher):
     def match(self, steps):
         #return True, that means steps must be the subsets of self.steps.
         if self.steps.issubset(steps):
@@ -93,6 +106,18 @@ class Route(object):
             return self
         else:
             return self._in
+
+    def any(self, *args, **kwargs):
+        self._in = Any(*args)
+        return self
+
+    def exact(self, *args, **kwargs):
+        self._in = Exact(*args)
+        return self
+
+    def next(self, *args, **kwargs):
+        self._out = Next(*args)
+        return self
 
     def __repr__(self):
         return 'in: %s, out: %s' % (self._in, self._out)
@@ -157,6 +182,13 @@ class RouteMatcher(object):
                     ret2 = self.involve_decendants(s, ret)
         return ret
 
+    def choices(self, step):
+        ret = set([])
+        for r in self.routes:
+            if r.match_step([step]):
+                ret.update(r.output().choices())
+
+        return ret
 
     def __repr__(self):
         l = []
