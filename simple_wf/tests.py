@@ -104,12 +104,14 @@ class RouterMatcherTest(TestCase):
 
     def test_involves_decendants(self):
         matcher = RouteMatcher(
-            Route().input( Any('_new') ).output( Next('check') ),
+            Route().input( Any('_new') ).output( Next('check', 'parent') ),
+            Route().input( Any('check') ).output( Next('pass', 'not_pass') ),
             Route().input( Any('parent') ).output( Next('childA', 'childB') ),
             Route().input( Any('childA') ).output( Next('childA.1') ),
             Route().input( Any('childA.1') ).output( Next('childA.2', 'childAA.1') ),
             Route().input( Any('childB') ).output( Next('childB.1') ),
             Route().input( Any('childB.1') ).output( Next('childB.2', 'childBB.1') ),
+            Route().input( Any('pass', 'not_pass') ).output( Next('end') ),
         )
         import ipdb; ipdb.set_trace()
         s = matcher.involve_decendants('parent')
