@@ -1,55 +1,32 @@
 import string
-class DoNothingApp(object):
-    def do(in_data):
-        return in_data
 
-class ActivityCfg(object):
-    def __init__(self, *args, **kwargs):
-        self.name = kwargs.get('name')
-        self.app = kwargs.get('app', DoNothingApp())
-
-class Activity(object):
-    def __init__(self, *args, **kwargs):
-        self.activity_cfg = kwargs.get('activity_cfg')
-        self.state = kwargs.get('state')
-
-    def app_run(in_data):
-        self.out_data = self.activity_cfg.do(in_data)
-        return self.out_data
-
-    def activate():
-        self.state = 'activated'
-
-    def complete():
-        self.state = 'completed'
-
-class StepMatcher(object):
+class EntryMatcher(object):
     
     def __init__(self, *args, **kwargs):
-        self.steps = set()
+        self.entries = set()
         for s in args:
-            self.steps.add(s)
+            self.entries.add(s)
         
 
-    def match(self, steps):
+    def match(self, entries):
         raise Exception, 'Implement me!'
 
     def __repr__(self):
-        return '%s:%s' % ( self.__class__.__name__ , repr ( list(self.steps)) )
+        return '%s:%s' % ( self.__class__.__name__ , repr ( list(self.entries)) )
 
     def __iter__(self):
-        return self.steps.__iter__()
+        return self.entries.__iter__()
 
     def __eq__(self, other):
         if self.__class__ != other.__class__:
             return False
-        return self.steps == other.steps
+        return self.entries == other.entries
 
     def __ne__(self, other):
         if self.__class__ != other.__class__:
             return True
 
-        return self.steps != other.steps
+        return self.entries != other.entries
 
         
 
@@ -57,17 +34,17 @@ class StepMatcher(object):
 '''
 Input for activities
 '''
-class Exact(StepMatcher):
-    def match(self, steps):
-        #return True, that means steps must be the subsets of self.steps.
-        if self.steps.issubset(steps):
+class Exact(EntryMatcher):
+    def match(self, entries):
+        #return True, that means entries must be the subsets of self.entries.
+        if self.entries.issubset(entries):
             return True
         return False
         
 
-class Any(StepMatcher):
-    def match(self, steps):
-        if self.steps.isdisjoint(steps):
+class Any(EntryMatcher):
+    def match(self, entries):
+        if self.entries.isdisjoint(entries):
             return False
         else:
             return True
@@ -129,19 +106,19 @@ class Route(object):
         else:
             return self._out
 
-    def involves(self, step):
-        if step in self._in:
+    def involves(self, entry):
+        if entry in self._in:
             return True
         return False
 
-    def match_step(self, steps):
-        return self._in.match(steps)
+    def match_entry(self, entries):
+        return self._in.match(entries)
 
     def match_data(self, data):
         return self.test_fun(data)
 
-    def match(self, steps, data):
-        return self.match_step(steps) and self.match_data(data)
+    def match(self, entries, data):
+        return self.match_entry(entries) and self.match_data(data)
 
     def test(self, test_fun=None):
         if test_fun is None:
@@ -150,30 +127,29 @@ class Route(object):
         return self
 
 
-class RouteMatcher(object):
-    
+class Router(object):  
     def __init__(self, *args, **kwargs):
         self.routes = []
         for r in args:
             self.routes.append(r)
 
-    def match_step(self, steps):
+    def match_entry(self, entries):
         ret = set()
         for r in self.routes:
-            if r.match_step(steps):
+            if r.match_entry(entries):
                 ret.update(r.output().choices())
         return ret
 
-    def match(self, steps, data = None):
+    def match(self, entries, data = None):
         ret = set()
         for r in self.routes:
-            if r.match(steps, data):
+            if r.match(entries, data):
                 ret.update(r.output().choices())
         return ret
 
-    def involve_decendants(self, step, ret=set([])):
+    def involve_decendants(self, entry, ret=set([])):
         for r in self.routes:
-            if r.involves( step ):
+            if r.involves( entry ):
                 nexts = r.output().choices()
                 s_diff = nexts.difference(ret)
                 if len(s_diff):
@@ -182,10 +158,10 @@ class RouteMatcher(object):
                     ret2 = self.involve_decendants(s, ret)
         return ret
 
-    def choices(self, step):
+    def choices(self, entry):
         ret = set([])
         for r in self.routes:
-            if r.match_step([step]):
+            if r.match_entry([entry]):
                 ret.update(r.output().choices())
 
         return ret
@@ -198,4 +174,10 @@ class RouteMatcher(object):
         return string.join(l, '\n')
 
 
-        
+class WorkflowEngine(object):
+    def config(self, router):
+        self.router = router
+
+    def next(self, entry, data = None):
+        selfrouter
+
