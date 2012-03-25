@@ -17,7 +17,7 @@ class WorkflowEngine(object):
     	self.p_driver.activate('_new')
     	self.complete('_new')
 
-    def choices(self):
+    def todo(self, entry):
     	return self.p_driver.active_entries()	
 
     def active_entries(self):
