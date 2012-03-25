@@ -20,14 +20,23 @@ class WorkflowInstance(models.Model):
     workflow = models.CharField(max_length=512)
     status = models.CharField(max_length=32, choices = STATUS_CHOICES)
 
-class Step(models.Model):
+class Entry(models.Model):
     STATE_CHOICES = {
         (u'activated', u'Activated'),
         (u'completed', u'Completed'),
-        (u'retired', u'Retired')
+        (u'retired', u'Retired'),
     }
 
     instance = models.ForeignKey(WorkflowInstance)
-    step = models.CharField(max_length=512)
+    entry = models.CharField(max_length=512)
     state = models.CharField(max_length=32, choices = STATE_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class TransitionLog(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)    
+    input = models.ForeignKey(Entry)
+    output = models.ForeignKey(Entry)
+    comments = models.TextField()
+    data = models.TextField()
+    action = models.CharField(max_length=128)
+

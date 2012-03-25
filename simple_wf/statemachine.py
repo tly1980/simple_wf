@@ -172,12 +172,3 @@ class Router(object):
             l.append(repr(r))
 
         return string.join(l, '\n')
-
-
-class WorkflowEngine(object):
-    def config(self, router):
-        self.router = router
-
-    def next(self, entry, data = None):
-        selfrouter
-
