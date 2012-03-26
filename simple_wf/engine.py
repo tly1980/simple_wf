@@ -1,9 +1,9 @@
 
 class MultiEntryReturn(Exception):
-	pass
+    pass
 
 class InvalidEntry(Exception):
-	pass
+    pass
 
 class EntryAlreadyActivated(Exception):
     pass
@@ -59,29 +59,28 @@ class MemPersistentDriver(object):
      
 
 class WorkflowEngine(object):
-	def __init__(self, p_driver, router):
-		self.p_driver = p_driver
+    def __init__(self, p_driver, router):
+        self.p_driver = p_driver
         self.router = router
-	
+    
     def router(self, router = None):
         if router is None:
             return self.router
         
-    def start(self):
-
-    	self.p_driver.activate('_new')
-    	self.complete('_new')
+    def start(self):    
+        self.p_driver.activate('_new')
+        self.complete('_new')
 
     def complete(self, entry, data = None, comments = None):
-    	if entry not in self.p_driver.active_entries():
-    		raise InvalidEntry()
+        if entry not in self.p_driver.active_entries():
+            raise InvalidEntry()
 
-    	entries = set([])
-    	entries.update(self.p_driver.completed_set(True))
-    	entries.add(entry)
+        entries = set([])
+        entries.update(self.p_driver.completed_set(True))
+        entries.add(entry)
         self.p_driver.complete(entry)
 
-    	for r in self.match_routes(entries, data):
+        for r in self.match_routes(entries, data):
             entries_input = r.input().entries
             entries_output = r.ouput().choices()
             self.p_driver.activate(entries_input, entries_output)

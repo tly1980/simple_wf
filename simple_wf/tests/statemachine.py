@@ -10,6 +10,7 @@ from warehouse.wf.statemachine import Route, Router, Any, Exact, Next, always_pa
 
 class RouterTest(TestCase):
 
+    
     def test_match_entry(self):
         router = Router(
             Route().any('_new').next('e1'),
