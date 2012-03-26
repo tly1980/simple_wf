@@ -6,11 +6,11 @@ Replace these with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from warehouse.wf.statemachine import Route, Router, Any, Exact, Next
+from warehouse.wf.statemachine import Route, Router, Any, Exact, Next, always_pass
 
-class RouterMatcherTest(TestCase):
+class RouterTest(TestCase):
 
-    def test_wf_match_entry(self):
+    def test_match_entry(self):
         router = Router(
             Route().any('_new').next('e1'),
             Route().any('e1').next('e2'),
@@ -27,6 +27,16 @@ class RouterMatcherTest(TestCase):
         self.assertEquals( router.match_entry(['_new', 'a']), set(['e1']) )
         self.assertEquals( router.match_entry(['_new', 'e2']), set(['e1', 'e3']) )
         ret = router.match_entry(['_new', 'e2', 'e3'])
+
+        router = Router(
+            Route().any('_new').next('a', 'b', 'c', 'd'),
+            Route().exact('a', 'b').next('ab'),
+            Route().exact('a', 'c').next('ac'),
+            Route().exact('b', 'c').next('bc'),
+            Route().any('d').next('_end'),
+        )
+
+        self.assertEquals( router.match_entry(['a', 'b', 'c', 'd']), set(['ab', 'ac', 'bc', '_end']) )
 
 
     def test_next_multi(self):
@@ -130,21 +140,121 @@ class RouterMatcherTest(TestCase):
         self.assertTrue( '_end' in s1)
 
         s2 = router.choices('not_pass')
-        self.assertTrue( '_end' in s2)        
-        
+        self.assertTrue( '_end' in s2)
+
+    def test_entries_involves_andjoin(self):
+        #ret should contains all the multi (len > 1) input in exact()
+
+        # case1
+        router = Router(
+            Route().any('_new').next('a1', 'a2'),
+            Route().exact('a1', 'a2').next('b1', 'b2'),
+            Route().exact('b1').next('_end'),
+            Route().exact('b2').next('_end'),
+        )
+
+        ret = router.entries_involves_andjoin()
+        #b1 b2 should not in
+        self.assertEquals(ret, set(['a1', 'a2']))
+
+        # case 2
+        router = Router(
+            Route().any('_new').next('a1', 'a2', 'a3'),
+            Route().exact('a1', 'a2').next('b1',),
+            Route().exact('a2', 'a3').next('b2'),
+            Route().any('b1', 'b2').next('_end'),
+        )
+
+        ret = router.entries_involves_andjoin()
+        self.assertEquals(ret, set(['a1', 'a2', 'a3']))
+
+        # case 3
+        router = Router(
+            Route().any('_new').next('a1', 'a2', 'a3'),
+            Route().exact('a1', 'a2').next('b1',),
+            Route().exact('a2', 'a3').next('b2'),
+            Route().any('b1', 'b2').next('_end'),
+        )
+
+        ret = router.entries_involves_andjoin()
+        self.assertEquals(ret, set(['a1', 'a2', 'a3']))
+
+        # case 4
+        router = Router(
+            Route().any('_new').next('a1', 'a2', 'a3'),
+            Route().exact('a1', 'a2').next('b1',),
+            Route().exact('a2', 'a3').next('b2'),
+            Route().exact('b1', 'b2').next('_end'),
+        )
+
+        ret = router.entries_involves_andjoin()
+        self.assertEquals(ret, set(['a1', 'a2', 'a3', 'b1', 'b2']))
+
+
+    def test_entries_involves_andsplit(self):
+        #ret should contains all the multi (len > 1) ouput in next()
+
+        #case1
+        router = Router(
+            Route().any('_new').next('a1', 'a2'),
+            Route().any('a1', 'a2').next('b1'),
+            Route().any('b1').next('c1', 'c2'),
+            Route().any('c1',).next('_end'),
+            Route().any('c2',).next('_end'),
+        )
+
+        ret = router.entries_involves_andsplit()
+        self.assertEquals(ret, set(['a1', 'a2', 'c1', 'c2']))
+
+     
 
 class RouteTest(TestCase):
     def test_exact(self):
-        self.assertEqual( Route().exact('a', 'b', 'c', 'd', 'e')._in, 
-                Exact('a', 'b', 'c', 'd', 'e') )
-        self.assertNotEqual( Route().exact('a', 'b', 'c', 'd', 'e')._in, 
-                Exact('a', 'b', 'c', ) )
+        r1 = Route().exact('a', 'b', 'c', 'd', 'e')
+        self.assertEqual( len(r1.input().entries), 5)
+        self.assertEqual( r1.input(), Exact('a', 'b', 'c', 'd', 'e') )
+        self.assertNotEqual( r1.input(), Exact('a', 'b', 'c', ) )
 
     def test_any(self):
         self.assertEqual( Route().any('a', 'b', 'c', 'd', 'e')._in, 
             Any('a', 'b', 'c', 'd', 'e') )
         self.assertNotEqual( Route().any('a', 'b', 'c', 'd', 'e')._in, 
             Any('a', 'b') )
+
+    def test_is_andjoin(self):
+        r1 = Route().exact('a', 'b', 'c', 'd', 'e')
+        self.assertTrue(r1.is_andjoin())
+
+        r2 = Route().exact('a')
+        self.assertFalse(r2.is_andjoin())
+
+        r3 = Route().any('a', 'b', 'c')
+        self.assertFalse(r3.is_andjoin())
+
+        r4 = Route().any('a')
+        self.assertFalse(r4.is_andjoin())
+
+    def test_is_andsplit(self):
+        r1 = Route().next('a', 'b', 'c', 'd', 'e')
+        self.assertTrue(r1.is_andsplit())
+
+        r3 = Route().next('a', 'b')
+        self.assertTrue(r3.is_andsplit())
+
+        r2 = Route().next('a')
+        self.assertFalse(r2.is_andsplit())
+
+    def test_test(self):
+        r1 = Route()
+        self.assertEquals(always_pass, r1.test())
+        self.assertTrue(r1.match_data({}))
+        self.assertTrue(r1.match_data(None))
+
+        gt1 = lambda a : a > 1
+        r1.test(gt1)
+        self.assertTrue(gt1, r1.test())
+        self.assertTrue(r1.match_data(2))
+        self.assertFalse(r1.match_data(1))
 
 
 class EntryMatcherTest(TestCase):

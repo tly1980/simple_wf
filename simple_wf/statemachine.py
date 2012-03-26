@@ -76,6 +76,22 @@ class Route(object):
         self._in = None
         self._out = None
 
+    def is_andjoin(self):
+        if not isinstance(self.input(), Exact):
+            return False
+
+        if len(self.input().entries) < 2:
+            return False
+
+        return True
+        
+
+    def is_andsplit(self):
+        if len (self.output().choices()) > 1:
+            return True
+        
+        return False
+
 
     def input( self, the_in = None):
         if the_in is not None:
@@ -141,10 +157,16 @@ class Router(object):
         return ret
 
     def match(self, entries, data = None):
-        ret = set()
+        ret = set([])
+        for r in self.match_routes(entries, data):
+            ret.update(r.output().choices())
+        return ret
+
+    def match_routes(self, entries, data = None):
+        ret = []
         for r in self.routes:
             if r.match(entries, data):
-                ret.update(r.output().choices())
+                ret.append(r)
         return ret
 
     def involve_decendants(self, entry, ret=set([])):
@@ -162,6 +184,28 @@ class Router(object):
         ret = set([])
         for r in self.routes:
             if r.match_entry([entry]):
+                ret.update(r.output().choices())
+
+        return ret
+
+    '''
+    Return the entry that can generate the join result.
+    '''
+    def entries_involves_andjoin(self):
+        ret = set([])
+        for r in self.routes:
+            if r.is_andjoin():
+                ret.update(r.input().entries)
+
+        return ret
+
+    '''
+    Return the entry that will produce split result.
+    '''
+    def entries_involves_andsplit(self):
+        ret = set([])
+        for r in self.routes:
+            if r.is_andsplit():
                 ret.update(r.output().choices())
 
         return ret
