@@ -38,7 +38,11 @@ class MemPersistentDriver(object):
         self.c_set_4_routing_eval = set([])
 
     def activate(entries_input):
-        pass
+        entries_input = set(entries_input)
+        inter_set = self.a_set.intersection()
+        if len(inter_set) > 0:
+            raise EntryAlreadyActivated()
+        
         
 
     def complete(entry):

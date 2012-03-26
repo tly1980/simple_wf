@@ -21,11 +21,11 @@ class WorkflowInstance(models.Model):
     status = models.CharField(max_length=32, choices = STATUS_CHOICES)
 
 class Entry(models.Model):
-    STATE_CHOICES = {
+    STATE_CHOICES = (
         (u'activated', u'Activated'),
         (u'completed', u'Completed'),
         (u'retired', u'Retired'),
-    }
+    )
 
     instance = models.ForeignKey(WorkflowInstance)
     entry = models.CharField(max_length=512)
