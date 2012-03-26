@@ -31,7 +31,7 @@ class Entry(models.Model):
     entry = models.CharField(max_length=512)
     state = models.CharField(max_length=32, choices = STATE_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
-    engage_routing_eval = models.BooleanField(default=False)
+    for_routing_eval = models.BooleanField(default=False)
 
 class TransitionLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)    
