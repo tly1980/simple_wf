@@ -99,6 +99,7 @@ class WorkflowEngineTest(TestCase):
         self.wf_engine.router(router)
         self.assertEqual(self.wf_engine.todo_set(), set(['_new']))
         self.wf_engine.start()
+
         self.assertEqual(self.wf_engine.todo_set(), set(['e1']))
         self.wf_engine.complete('e1')
         self.assertEqual(self.wf_engine.todo_set(), set(['e2']))

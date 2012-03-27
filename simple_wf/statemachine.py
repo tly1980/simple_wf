@@ -167,7 +167,10 @@ class Router(object):
                 ret.append(r)
         return ret
 
-    def involve_decendants(self, entry, ret=set([])):
+    def involve_decendants(self, entry, ret=None):
+        if ret is None:
+            ret = set([])
+
         for r in self.routes:
             if r.involves(entry):
                 nexts = r.output().choices()

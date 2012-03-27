@@ -98,7 +98,7 @@ class RouterTest(TestCase):
             Route().exact('cA.1.1', 'cA.1.2').next('_end'),
             Route().any('pass', 'not_pass').next('_end'),
         )
-        #import ipdb; ipdb.set_trace()
+        
         s = router.involve_decendants('p')
 
         self.assertTrue('check' not in s)
@@ -116,6 +116,19 @@ class RouterTest(TestCase):
         self.assertTrue('cB.1.2' in s)
 
         self.assertTrue('_end' in s)
+
+    def test_involves_decendants2(self):
+        router = Router(
+            Route().any('_new').next('a'),
+            Route().any('a').next('b', 'c'),
+            Route().any('b').next('d'),
+            Route().any('d').next('_end'),
+            Route().any('c').next('_end'),
+        )
+        s = router.involve_decendants('a')
+        self.assertEqual(s, set(['b', 'c', 'd', '_end']))
+        s = router.involve_decendants('b')
+        self.assertEqual(s, set(['d', '_end']))
 
     def test_choices(self):
         router = Router(
