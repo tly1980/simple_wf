@@ -142,5 +142,6 @@ class WorkflowEngineTest(TestCase):
         self.wf_engine.complete('e1')
         self.wf_engine.complete('e2')
         self.assertEqual(self.wf_engine.todo_set(), set(['e3', 'e4']))
+        # FIXME!!
         #self.wf_engine.complete('e3')
         #self.assertEqual(self.wf_engine.todo_set(), set(['e0']))

@@ -10,7 +10,6 @@ from warehouse.wf.statemachine import Route, Router, Any, Exact, always_pass
 
 
 class RouterTest(TestCase):
-
     def test_match_entry(self):
         router = Router(
             Route().any('_new').next('e1'),
@@ -205,15 +204,15 @@ class RouterTest(TestCase):
 class RouteTest(TestCase):
     def test_exact(self):
         r1 = Route().exact('a', 'b', 'c', 'd', 'e')
-        self.assertEqual( len(r1.input().entries), 5)
-        self.assertEqual( r1.input(), Exact('a', 'b', 'c', 'd', 'e') )
-        self.assertNotEqual( r1.input(), Exact('a', 'b', 'c', ) )
+        self.assertEqual(len(r1.input().entries), 5)
+        self.assertEqual(r1.input(), Exact('a', 'b', 'c', 'd', 'e'))
+        self.assertNotEqual(r1.input(), Exact('a', 'b', 'c', ))
 
     def test_any(self):
-        self.assertEqual( Route().any('a', 'b', 'c', 'd', 'e')._in, 
-            Any('a', 'b', 'c', 'd', 'e') )
-        self.assertNotEqual( Route().any('a', 'b', 'c', 'd', 'e')._in, 
-            Any('a', 'b') )
+        self.assertEqual(Route().any('a', 'b', 'c', 'd', 'e')._in,
+            Any('a', 'b', 'c', 'd', 'e'))
+        self.assertNotEqual(Route().any('a', 'b', 'c', 'd', 'e')._in,
+            Any('a', 'b'))
 
     def test_is_andjoin(self):
         r1 = Route().exact('a', 'b', 'c', 'd', 'e')

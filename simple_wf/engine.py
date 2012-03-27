@@ -103,7 +103,8 @@ class WorkflowEngine(object):
         self.complete('_new')
 
     def complete(self, entry, data=None, comments=None):
-        if entry not in self.p_driver.activated_set():
+        activated_set = self.p_driver.activated_set()
+        if entry not in activated_set:
             raise InvalidEntry()
 
         entries = set([])
@@ -119,9 +120,14 @@ class WorkflowEngine(object):
             entries_input = r.input().entries
             entries_output = r.output().choices()
             self.p_driver.activate(entries_output)
-
             self.p_driver.disable_andjoin(entries_input)
-            #self.p_driver.retired_actived_set( set_in):
+
+        set_to_retired = set([])
+        for e in self._router.involve_decendants(entry):
+            if e in activated_set:
+                set_to_retired.add(e)
+
+        self.p_driver.retired_actived_set(set_to_retired)
 
 
     def todo_set(self):
