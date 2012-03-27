@@ -1,18 +1,17 @@
 import string
 
+
 class EntryMatcher(object):
-    
     def __init__(self, *args, **kwargs):
         self.entries = set()
         for s in args:
             self.entries.add(s)
-        
 
     def match(self, entries):
         raise Exception, 'Implement me!'
 
     def __repr__(self):
-        return '%s:%s' % ( self.__class__.__name__ , repr ( list(self.entries)) )
+        return '%s:%s' % (self.__class__.__name__, repr(list(self.entries)))
 
     def __iter__(self):
         return self.entries.__iter__()
@@ -28,19 +27,19 @@ class EntryMatcher(object):
 
         return self.entries != other.entries
 
-        
 
-    
 '''
 Input for activities
 '''
+
+
 class Exact(EntryMatcher):
     def match(self, entries):
         #return True, that means entries must be the subsets of self.entries.
         if self.entries.issubset(entries):
             return True
         return False
-        
+
 
 class Any(EntryMatcher):
     def match(self, entries):
@@ -48,11 +47,13 @@ class Any(EntryMatcher):
             return False
         else:
             return True
-    
+
 
 '''
 Output for activities
 '''
+
+
 class Next(object):
     def __init__(self, *args, **kwarg):
         self._choices = set([])
@@ -63,14 +64,14 @@ class Next(object):
         return self._choices
 
     def __repr__(self):
-        return '%s:%s' % ( self.__class__.__name__ , repr ( list( self._choices)) )
+        return '%s:%s' % (self.__class__.__name__, repr(list(self._choices)))
+
 
 def always_pass(test_data=None):
     return True
 
 
 class Route(object):
-
     def __init__(self):
         self.test_fun = always_pass
         self._in = None
@@ -84,18 +85,15 @@ class Route(object):
             return False
 
         return True
-        
 
     def is_andsplit(self):
-        if len (self.output().choices()) > 1:
+        if len(self.output().choices()) > 1:
             return True
-        
         return False
 
-
-    def input( self, the_in = None):
+    def input(self, the_in=None):
         if the_in is not None:
-            self._in= the_in
+            self._in = the_in
             return self
         else:
             return self._in
@@ -115,7 +113,7 @@ class Route(object):
     def __repr__(self):
         return 'in: %s, out: %s' % (self._in, self._out)
 
-    def output(self, the_out = None):
+    def output(self, the_out=None):
         if the_out is not None:
             self._out = the_out
             return self
@@ -143,7 +141,7 @@ class Route(object):
         return self
 
 
-class Router(object):  
+class Router(object):
     def __init__(self, *args, **kwargs):
         self.routes = []
         for r in args:
@@ -156,13 +154,13 @@ class Router(object):
                 ret.update(r.output().choices())
         return ret
 
-    def match(self, entries, data = None):
+    def match(self, entries, data=None):
         ret = set([])
         for r in self.match_routes(entries, data):
             ret.update(r.output().choices())
         return ret
 
-    def match_routes(self, entries, data = None):
+    def match_routes(self, entries, data=None):
         ret = []
         for r in self.routes:
             if r.match(entries, data):
@@ -171,13 +169,13 @@ class Router(object):
 
     def involve_decendants(self, entry, ret=set([])):
         for r in self.routes:
-            if r.involves( entry ):
+            if r.involves(entry):
                 nexts = r.output().choices()
                 s_diff = nexts.difference(ret)
                 if len(s_diff):
                     ret.update(s_diff)
                 for s in s_diff:
-                    ret2 = self.involve_decendants(s, ret)
+                    self.involve_decendants(s, ret)
         return ret
 
     def choices(self, entry):
