@@ -1,6 +1,21 @@
 from django.test import TestCase
 from warehouse.wf.engine import MemPersistentDriver, WorkflowEngine
+from warehouse.wf.engine import EntryException, MultiEntryReturn, EntryNotActivated
 from warehouse.wf.statemachine import Router, Route
+
+
+class EntryExceptionTest(TestCase):
+    def test_EntryException(self):
+        e = EntryException('a', 'b', 'c')
+        self.assertEqual(e.entry_set, set(['a', 'b', 'c']))
+
+        e = MultiEntryReturn('a', 'b', 'c', entry_set=['d', 'e', 'a'])
+        self.assertEqual(e.entry_set, set(['a', 'b', 'c', 'd', 'e']))
+
+        self.assertEqual(repr(e),
+            "MultiEntryReturn: set(['a', 'c', 'b', 'e', 'd'])")
+        self.assertEqual('%s' % e,
+            "MultiEntryReturn: set(['a', 'c', 'b', 'e', 'd'])")
 
 
 class MemPersistentDriverTest(TestCase):
@@ -97,7 +112,14 @@ class WorkflowEngineTest(TestCase):
         )
 
         self.wf_engine.router(router)
-        self.assertEqual(self.wf_engine.todo_set(), set(['_new']))
+        self.assertEqual(self.wf_engine.todo_set(), set([]))
+
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('e1'))
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('e2'))
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('e3'))
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('e4'))
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('_end'))
+
         self.wf_engine.start()
 
         self.assertEqual(self.wf_engine.todo_set(), set(['e1']))

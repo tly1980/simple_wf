@@ -1,19 +1,34 @@
 from datetime import datetime
 
 
-class MultiEntryReturn(Exception):
+class EntryException(Exception):
+    def __init__(self, *args, **kwargs):
+        self.entry_set = set([])
+        self.entry_set.update(*args)
+        entry_set = kwargs.get('entry_set')
+        if entry_set:
+            self.entry_set.update(entry_set)
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return '%s: %s' % (self.__class__.__name__, repr(self.entry_set))
+
+
+class MultiEntryReturn(EntryException):
     pass
 
 
-class InvalidEntry(Exception):
+class InvalidEntry(EntryException):
     pass
 
 
-class EntryAlreadyActivated(Exception):
+class EntryAlreadyActivated(EntryException):
     pass
 
 
-class EntryNotActivated(Exception):
+class EntryNotActivated(EntryException):
     pass
 
 
@@ -56,14 +71,14 @@ class MemPersistentDriver(object):
         a_list = map(lambda a: a['e'], self.a_list)
         inter_set = entries_input.intersection(a_list)
         if len(inter_set) > 0:
-            raise EntryAlreadyActivated()
+            raise EntryAlreadyActivated(entry_set=inter_set)
 
         for e in entries_input:
             self.a_list.append({'e': e, 'timestamp_a': datetime.now()})
 
     def complete(self, entry, is_4_routing_eval=False):
         if entry not in self.activated_set():
-            raise EntryNotActivated()
+            raise EntryNotActivated(entry)
 
         self.c_list.append({
             'e': entry,
@@ -105,7 +120,7 @@ class WorkflowEngine(object):
     def complete(self, entry, data=None, comments=None):
         activated_set = self.p_driver.activated_set()
         if entry not in activated_set:
-            raise InvalidEntry()
+            raise EntryNotActivated(entry)
 
         #remove the involve activate set
         set_to_retired = set([])
@@ -133,10 +148,6 @@ class WorkflowEngine(object):
             self.p_driver.activate(entries_output)
             self.p_driver.disable_andjoin(entries_input)
 
-
     def todo_set(self):
         ret = self.p_driver.activated_set()
-        if len(ret) == 0:
-            return set(['_new'])
-
         return ret
