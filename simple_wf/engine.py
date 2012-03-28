@@ -13,7 +13,7 @@ class WorkflowEngine(object):
         return self
 
     def start(self):
-        self.p_driver.activate(['_new'])
+        self.p_driver.activate('_new')
         self.complete('_new')
 
     def complete(self, entry, data=None, comments=None):
@@ -30,13 +30,17 @@ class WorkflowEngine(object):
         if entry in set_to_retired:
             set_to_retired.remove(entry)
 
-        self.p_driver.retired_actived_set(set_to_retired)
+        # if the there is some existing active decedants of the entry,
+        # retired them
+        self.p_driver.retired_actived(set_to_retired)
 
         entries = set([])
         entries.update(self.p_driver.completed_set(True))
         entries.add(entry)
 
         if entry in self._router.entries_involves_andjoin():
+            # if the entry involes for "and join",
+            # open set is_4_routing_eval to True
             self.p_driver.complete(entry, True)
         else:
             self.p_driver.complete(entry, False)
@@ -44,7 +48,7 @@ class WorkflowEngine(object):
         for r in self._router.match_routes(entries, data):
             entries_input = r.input().entries
             entries_output = r.output().choices()
-            self.p_driver.activate(entries_output)
+            self.p_driver.activate(entries=entries_output)
             self.p_driver.disable_andjoin(entries_input)
 
     def todo_set(self):

@@ -6,10 +6,10 @@ class PersistentDriver(object):
     def __init__(self, instance_id):
         self.instance_id = instance_id
 
-    def activate(entries_input):
+    def activate(self,  *args, **kwargs):
         pass
 
-    def complete(entry):
+    def complete(self, entry):
         pass
 
     def activated_set(self):
@@ -21,16 +21,19 @@ class PersistentDriver(object):
     def disable_andjoin(self, set_in):
         pass
 
-    def retired_actived_set(self, set_in):
+    def retired_actived(self, set_in):
         pass
 
-    def close_wf():
+    def close_wf(self):
         pass
 
-    def open_wf():
+    def open_wf(self):
         pass
 
-    def cancel_wf():
+    def cancel_wf(self):
+        pass
+
+    def log_transition(input, output):
         pass
 
 
@@ -45,14 +48,18 @@ class MemPersistentDriver(PersistentDriver):
     def activated_set(self):
         return set(map(lambda a: a['e'], self.a_list))
 
-    def activate(self, entries_input):
-        entries_input = set(entries_input)
+    def activate(self,  *args, **kwargs):
+        entries = kwargs.get('entries', set([]))
+        entries = set(entries)
+        for a in args:
+            entries.add(a)
+
         a_list = map(lambda a: a['e'], self.a_list)
-        inter_set = entries_input.intersection(a_list)
+        inter_set = entries.intersection(a_list)
         if len(inter_set) > 0:
             raise EntryAlreadyActivated(entry_set=inter_set)
 
-        for e in entries_input:
+        for e in entries:
             self.a_list.append({'e': e, 'timestamp_a': datetime.now()})
 
     def complete(self, entry, is_4_routing_eval=False):
@@ -77,5 +84,5 @@ class MemPersistentDriver(PersistentDriver):
             if e['e'] in set_in:
                 e['is_4_routing_eval'] = False
 
-    def retired_actived_set(self, set_in):
+    def retired_actived(self, set_in):
         self.a_list = filter(lambda e: e['e'] not in set_in, self.a_list)

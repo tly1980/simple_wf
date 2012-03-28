@@ -3,14 +3,16 @@ from ..engine import WorkflowEngine
 from ..persistent_driver import MemPersistentDriver
 from ..statemachine import Router, Route
 from ..exception import EntryNotActivated
+from ..models import DJPersistentDriver
 
 
 class WorkflowEngineTest(TestCase):
 
     def setUp(self):
         self.router = Router()
-        self.wf_engine = WorkflowEngine(MemPersistentDriver('test'),
-             self.router)
+        #self.wf_engine = WorkflowEngine(MemPersistentDriver('test'),
+        #     self.router)
+        self.wf_engine = WorkflowEngine(DJPersistentDriver(), self.router)
 
     def test_router(self):
         r2 = Router()
@@ -84,6 +86,6 @@ class WorkflowEngineTest(TestCase):
         self.wf_engine.complete('e1')
         self.wf_engine.complete('e2')
         self.assertEqual(self.wf_engine.todo_set(), set(['e3', 'e4']))
-        # FIXME!!
-        #self.wf_engine.complete('e3')
-        #self.assertEqual(self.wf_engine.todo_set(), set(['e0']))
+        
+        self.wf_engine.complete('e3')
+        self.assertEqual(self.wf_engine.todo_set(), set(['e0']))

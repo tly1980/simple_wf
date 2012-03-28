@@ -4,6 +4,18 @@ from warehouse.wf.exception import EntryAlreadyActivated, EntryNotActivated
 from warehouse.wf.persistent_driver import PersistentDriver
 # Create your models here.
 
+class InvliadWorkflowInstanceStatusChange(Exception):
+    def __init__(self, instance_id, current_status, to_status):
+        super(Exception, self).__init__()
+        self.instance_id = instance_id
+        self.current_status = current_status
+        self.to_status = to_status
+        self.msg = '%s wf_id %s :[%s] - [%s]' % (self.__class__,
+            self.instance_id, self.current_status, self.to_status)
+
+    
+    def __repr__(self):
+        return self.msg
 
 class WorkflowInstance(models.Model):
     STATUS_CHOICES = (
@@ -31,14 +43,17 @@ class Entry(models.Model):
     for_routing_eval = models.BooleanField(default=False)
 
     def __repr__(self):
-        return 'wf_id:%s  [%s, %s, %s, %s] ' %(self.instance.id, self.entry,
+        return 'wf_id:%s  [%s, %s, %s, %s] ' % (self.instance.id,
+            self.entry,
             self.state, self.for_routing_eval, self.timestamp)
 
 
 class TransitionLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
-    input = models.ForeignKey(Entry, related_name='as_input')
-    output = models.ForeignKey(Entry, related_name='as_output')
+    input = models.ForeignKey(Entry, related_name='as_input',
+        null=True, blank=True)
+    output = models.ForeignKey(Entry, related_name='as_output',
+        null=True, blank=True)
     comments = models.TextField()
     data = models.TextField()
     action = models.CharField(max_length=128)
@@ -68,7 +83,8 @@ class DJPersistentDriver(PersistentDriver):
         for a in args:
             entries.add(a)
 
-        existed_e = Entry.objects.filter(entry__in=entries)
+        existed_e = Entry.objects.filter(entry__in=entries, state='activated',
+            instance=self.wf_instance)
 
         if len(existed_e) > 0:
             inter_set = map(lambda e_obj: e_obj.entry,  existed_e)
@@ -108,10 +124,35 @@ class DJPersistentDriver(PersistentDriver):
             e_obj.for_routing_eval = False
             e_obj.save()
 
-    def retired_actived_set(self, set_in):
+    def retired_actived(self, set_in):
         for e_obj in Entry.objects.filter(
                 instance=self.wf_instance,
                 state='activated',
                 entry__in=set_in):
             e_obj.state = 'retired'
             e_obj.save()
+
+    def close_wf(self):
+        if self.wf_instance.state in ['started']:
+            self.wf_instance.state = 'closed'
+            self.wf_instance.save()
+        else:
+            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+                self.wf_instance.state, 'cancelled')
+
+    def start_wf(self):
+        if self.wf_instance.state in ['new']:
+            self.wf_instance.state = 'started'
+            self.wf_instance.save()
+        else:
+            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+                self.wf_instance.state, 'started')
+
+    def cancel_wf(self):
+        if self.wf_instance.state in ['new', 'started']:
+            self.wf_instance.state = 'cancelled'
+            self.wf_instance.save()
+        else:
+            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+                self.wf_instance.state, 'cancelled')
+
