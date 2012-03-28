@@ -1,93 +1,8 @@
 from django.test import TestCase
-from warehouse.wf.engine import MemPersistentDriver, WorkflowEngine
-from warehouse.wf.engine import EntryException, MultiEntryReturn, EntryNotActivated
-from warehouse.wf.statemachine import Router, Route
-
-
-class EntryExceptionTest(TestCase):
-    def test_EntryException(self):
-        e = EntryException('a', 'b', 'c')
-        self.assertEqual(e.entry_set, set(['a', 'b', 'c']))
-
-        e = MultiEntryReturn('a', 'b', 'c', entry_set=['d', 'e', 'a'])
-        self.assertEqual(e.entry_set, set(['a', 'b', 'c', 'd', 'e']))
-
-        self.assertEqual(repr(e),
-            "MultiEntryReturn: set(['a', 'c', 'b', 'e', 'd'])")
-        self.assertEqual('%s' % e,
-            "MultiEntryReturn: set(['a', 'c', 'b', 'e', 'd'])")
-
-
-class MemPersistentDriverTest(TestCase):
-    def setUp(self):
-        self.p_driver = MemPersistentDriver('test')
-
-    def test_activate(self):
-        self.p_driver.activate('a')
-        self.assertEquals(self.p_driver.activated_set(), set(['a']))
-        self.p_driver.activate('b')
-        self.assertEquals(self.p_driver.activated_set(), set(['a', 'b']))
-
-    def test_complete(self):
-        self.p_driver.activate('a')
-        self.assertEquals(self.p_driver.activated_set(), set(['a']))
-        self.p_driver.complete('a')
-        self.assertEquals(self.p_driver.activated_set(), set([]))
-        self.assertEquals(self.p_driver.completed_set(), set(['a']))
-
-        self.p_driver.activate('b')
-        self.assertEquals(self.p_driver.activated_set(), set(['b']))
-        self.p_driver.complete('b')
-        self.assertEquals(self.p_driver.activated_set(), set([]))
-        self.assertEquals(self.p_driver.completed_set(), set(['a', 'b']))
-
-        self.p_driver.activate('c')
-        self.assertEquals(self.p_driver.activated_set(), set(['c']))
-        self.p_driver.complete('c', True)
-        self.assertEquals(self.p_driver.activated_set(), set([]))
-        self.assertEquals(self.p_driver.completed_set(), set(['a', 'b']))
-        self.assertEquals(self.p_driver.completed_set(True), set(['c']))
-
-        self.p_driver.activate('d')
-        self.assertEquals(self.p_driver.activated_set(), set(['d']))
-        self.p_driver.complete('d', True)
-        self.assertEquals(self.p_driver.activated_set(), set([]))
-        self.assertEquals(self.p_driver.completed_set(), set(['a', 'b']))
-        self.assertEquals(self.p_driver.completed_set(True), set(['c', 'd']))
-
-        self.p_driver.activate('e')
-        self.p_driver.activate('f')
-        self.assertEquals(self.p_driver.activated_set(), set(['e', 'f']))
-        self.p_driver.complete('e', True)
-        self.assertEquals(self.p_driver.activated_set(), set(['f']))
-        self.p_driver.complete('f', True)
-
-        self.assertEquals(self.p_driver.completed_set(), set(['a', 'b']))
-        self.assertEquals(self.p_driver.completed_set(True),
-                        set(['c', 'd', 'e', 'f']))
-
-    def test_disable_andjoin(self):
-        self.p_driver.activate('a')
-        self.p_driver.activate('b')
-        self.p_driver.complete('a', True)
-        self.p_driver.complete('b', True)
-        self.assertEquals(self.p_driver.completed_set(), set([]))
-        self.assertEquals(self.p_driver.completed_set(True), set(['a', 'b']))
-        self.p_driver.disable_andjoin(['a'])
-        self.assertEquals(self.p_driver.completed_set(), set(['a']))
-        self.assertEquals(self.p_driver.completed_set(True), set(['b']))
-        self.p_driver.disable_andjoin(['b'])
-        self.assertEquals(self.p_driver.completed_set(), set(['a', 'b']))
-        self.assertEquals(self.p_driver.completed_set(True), set([]))
-
-    def test_disable_andjoin_batch(self):
-        self.p_driver.activate('a')
-        self.p_driver.activate('b')
-        self.p_driver.complete('a', True)
-        self.p_driver.complete('b', True)
-        self.p_driver.disable_andjoin(['a', 'b'])
-        self.assertEquals(self.p_driver.completed_set(), set(['a', 'b']))
-        self.assertEquals(self.p_driver.completed_set(True), set([]))
+from ..engine import WorkflowEngine
+from ..persistent_driver import MemPersistentDriver
+from ..statemachine import Router, Route
+from ..exception import EntryNotActivated
 
 
 class WorkflowEngineTest(TestCase):
@@ -113,12 +28,16 @@ class WorkflowEngineTest(TestCase):
 
         self.wf_engine.router(router)
         self.assertEqual(self.wf_engine.todo_set(), set([]))
+        #self.assertRaises(EntryNotActivated, self.wf_engine.complete, 'e1')
+        with self.assertRaises(EntryNotActivated):
+            self.wf_engine.complete('e1')
 
-        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('e1'))
-        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('e2'))
-        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('e3'))
-        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('e4'))
-        self.assertRaises(EntryNotActivated, self.wf_engine.complete, ('_end'))
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, 'e1')
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, 'e2')
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, 'e3')
+        self.assertRaises(EntryNotActivated, self.wf_engine.complete, 'e4')
+        self.assertRaises(EntryNotActivated,
+                    self.wf_engine.complete, ('_end',))
 
         self.wf_engine.start()
 

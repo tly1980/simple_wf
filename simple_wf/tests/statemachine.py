@@ -6,7 +6,7 @@ Replace these with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from warehouse.wf.statemachine import Route, Router, Any, Exact, always_pass
+from ..statemachine import Route, Router, Any, Exact, always_pass
 
 
 class RouterTest(TestCase):
