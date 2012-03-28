@@ -4,6 +4,7 @@ from warehouse.wf.exception import EntryAlreadyActivated, EntryNotActivated
 from warehouse.wf.persistent_driver import PersistentDriver
 # Create your models here.
 
+
 class InvliadWorkflowInstanceStatusChange(Exception):
     def __init__(self, instance_id, current_status, to_status):
         super(Exception, self).__init__()
@@ -13,9 +14,9 @@ class InvliadWorkflowInstanceStatusChange(Exception):
         self.msg = '%s wf_id %s :[%s] - [%s]' % (self.__class__,
             self.instance_id, self.current_status, self.to_status)
 
-    
     def __repr__(self):
         return self.msg
+
 
 class WorkflowInstance(models.Model):
     STATUS_CHOICES = (
@@ -50,7 +51,7 @@ class Entry(models.Model):
 
 class TransitionLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
-    input = models.ForeignKey(Entry, related_name='as_input',
+    triger = models.ForeignKey(Entry, related_name='as_triger',
         null=True, blank=True)
     output = models.ForeignKey(Entry, related_name='as_output',
         null=True, blank=True)
@@ -155,4 +156,7 @@ class DJPersistentDriver(PersistentDriver):
         else:
             raise InvliadWorkflowInstanceStatusChange(self.instance_id,
                 self.wf_instance.state, 'cancelled')
+
+    def log(self, action, input_e=None, output_e=None):
+        pass
 

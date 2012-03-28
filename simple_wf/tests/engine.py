@@ -31,8 +31,6 @@ class WorkflowEngineTest(TestCase):
         self.wf_engine.router(router)
         self.assertEqual(self.wf_engine.todo_set(), set([]))
         #self.assertRaises(EntryNotActivated, self.wf_engine.complete, 'e1')
-        with self.assertRaises(EntryNotActivated):
-            self.wf_engine.complete('e1')
 
         self.assertRaises(EntryNotActivated, self.wf_engine.complete, 'e1')
         self.assertRaises(EntryNotActivated, self.wf_engine.complete, 'e2')
