@@ -6,13 +6,13 @@ from warehouse.wf.persistent_driver import PersistentDriver
 
 
 class InvliadWorkflowInstanceStatusChange(Exception):
-    def __init__(self, instance_id, current_status, to_status):
+    def __init__(self, instance_id, current_state, to_state):
         super(Exception, self).__init__()
         self.instance_id = instance_id
-        self.current_status = current_status
-        self.to_status = to_status
+        self.current_state = current_state
+        self.to_state = to_state
         self.msg = '%s wf_id %s :[%s] - [%s]' % (self.__class__,
-            self.instance_id, self.current_status, self.to_status)
+            self.instance_id, self.current_status, self.to_state)
 
     def __repr__(self):
         return self.msg
@@ -27,7 +27,7 @@ class WorkflowInstance(models.Model):
         (u'cancelled', u'cancelled'),
     )
     workflow = models.CharField(max_length=512)
-    status = models.CharField(max_length=32, choices=STATUS_CHOICES)
+    state = models.CharField(max_length=32, choices=STATUS_CHOICES)
 
 
 class Entry(models.Model):
@@ -42,7 +42,6 @@ class Entry(models.Model):
     state = models.CharField(max_length=32, choices=STATE_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
     for_routing_eval = models.BooleanField(default=False)
-    operator = models.ForeignKey(User)
 
     def __repr__(self):
         return '<%s, %s:%s>' % (self.id, self.__class__.__name__,
@@ -88,7 +87,7 @@ class DJPersistentDriver(PersistentDriver):
         self.operator = operator
         if instance_id is None:
             self.wf_instance = WorkflowInstance.objects.create(workflow=wf_name,
-                status='new')
+                state='new')
         else:
             self.wf_instance = WorkflowInstance.objects.filter(id=instance_id)
 
@@ -258,6 +257,9 @@ class DJPersistentDriver(PersistentDriver):
             raise InvliadWorkflowInstanceStatusChange(self.instance_id,
                 self.wf_instance.state, 'cancelled')
 
+    def wf_state(self):
+        return self.wf_instance.state
+
     def log(self, *args, **kwargs):
         kwargs['instance'] = self.wf_instance
         kwargs['operator'] = self.operator
@@ -265,5 +267,4 @@ class DJPersistentDriver(PersistentDriver):
 
     def create_entry(self, *args, **kwargs):
         kwargs['instance'] = self.wf_instance
-        kwargs['operator'] = self.operator
         return Entry.objects.create(**kwargs)

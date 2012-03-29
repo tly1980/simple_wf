@@ -13,6 +13,7 @@ class WorkflowEngine(object):
         return self
 
     def start(self):
+        self.p_driver.start_wf()
         self.p_driver.activate('_new')
         self.complete('_new')
 
@@ -57,6 +58,12 @@ class WorkflowEngine(object):
             self.p_driver.activate(entries=entries_output)
             self.p_driver.disable_andjoin(entries_input, caused_by=entry)
 
+        if entry == '_end':
+            self.p_driver.close_wf()
+
     def todo_set(self):
         ret = self.p_driver.activated_set()
         return ret
+
+    def wf_state(self):
+        return self.p_driver.wf_state()

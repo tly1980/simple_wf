@@ -59,7 +59,9 @@ class WorkflowEngineTest(TestCase):
         self.wf_engine.router(router)
         self.assertEqual(self.wf_engine.todo_set(), set([]))
 
+        self.assertEqual(self.wf_engine.wf_state(), 'new')
         self.wf_engine.start()
+        self.assertEqual(self.wf_engine.wf_state(), 'started')
 
         self.assertEqual(self.wf_engine.todo_set(), set(['e1']))
         self.wf_engine.complete('e1')
@@ -68,6 +70,10 @@ class WorkflowEngineTest(TestCase):
         self.assertEqual(self.wf_engine.todo_set(), set(['e3']))
         self.wf_engine.complete('e3')
         self.assertEqual(self.wf_engine.todo_set(), set(['_end']))
+
+        #wf should close automatically when _end completed
+        self.wf_engine.complete('_end')
+        self.assertEqual(self.wf_engine.wf_state(), 'closed')
 
     def test_todo1(self):
         router = Router(
@@ -85,6 +91,11 @@ class WorkflowEngineTest(TestCase):
         self.assertEqual(self.wf_engine.todo_set(), set(['e3']))
         self.wf_engine.complete('e3')
         self.assertEqual(self.wf_engine.todo_set(), set(['_end']))
+
+        #wf should close automatically when _end completed
+        self.wf_engine.complete('_end')
+        self.assertEqual(self.wf_engine.wf_state(), 'closed')
+
 
     def test_todo2(self):
         router = Router(
@@ -105,5 +116,18 @@ class WorkflowEngineTest(TestCase):
         self.wf_engine.complete('e2')
         self.assertEqual(self.wf_engine.todo_set(), set(['e3', 'e4']))
 
+        #e3 should restart the e0
         self.wf_engine.complete('e3')
         self.assertEqual(self.wf_engine.todo_set(), set(['e0']))
+
+        self.wf_engine.complete('e0')
+        self.assertEqual(self.wf_engine.todo_set(), set(['e1', 'e2', 'e3']))
+        self.wf_engine.complete('e1')
+        self.wf_engine.complete('e2')
+        self.assertEqual(self.wf_engine.todo_set(), set(['e3', 'e4']))
+        self.wf_engine.complete('e4')
+        self.assertEqual(self.wf_engine.todo_set(), set(['_end', 'e3']))
+        
+        #wf should close automatically when _end completed
+        self.wf_engine.complete('_end')
+        self.assertEqual(self.wf_engine.wf_state(), 'closed')
