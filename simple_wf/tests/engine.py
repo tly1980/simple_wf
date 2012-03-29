@@ -60,7 +60,7 @@ class WorkflowEngineTest(TestCase):
         self.assertEqual(self.wf_engine.todo_set(), set([]))
 
         self.assertEqual(self.wf_engine.wf_state(), 'new')
-        self.wf_engine.start()
+        self.wf_engine.wf_start()
         self.assertEqual(self.wf_engine.wf_state(), 'started')
 
         self.assertEqual(self.wf_engine.todo_set(), set(['e1']))
@@ -83,7 +83,7 @@ class WorkflowEngineTest(TestCase):
         )
 
         self.wf_engine.router(router)
-        self.wf_engine.start()
+        self.wf_engine.wf_start()
         self.assertEqual(self.wf_engine.todo_set(), set(['e1', 'e2']))
         self.wf_engine.complete('e1')
         self.assertEqual(self.wf_engine.todo_set(), set(['e2']))
@@ -107,7 +107,7 @@ class WorkflowEngineTest(TestCase):
         )
 
         self.wf_engine.router(router)
-        self.wf_engine.start()
+        self.wf_engine.wf_start()
         self.assertEqual(self.wf_engine.todo_set(), set(['e0']))
 
         self.wf_engine.complete('e0')

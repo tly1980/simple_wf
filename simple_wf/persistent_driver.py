@@ -24,21 +24,30 @@ class PersistentDriver(object):
     def retire(self, set_in):
         pass
 
-    def close_wf(self):
+    def wf_close(self):
         pass
 
-    def open_wf(self):
+    def wf_start(self):
         pass
 
-    def cancel_wf(self):
+    def wf_cancel(self):
+        pass
+
+    def wf_pause(self):
+        pass
+
+    def wf_resume(self):
         pass
 
     def log(self, *args, **kwargs):
         pass
 
 
+"""
+Obsoleted ....
+
 class MemPersistentDriver(PersistentDriver):
-    """docstring for MemPersistentDriver"""
+    
     def __init__(self, instance_id):
         super(MemPersistentDriver, self).__init__(instance_id)
         self.a_list = []
@@ -86,3 +95,4 @@ class MemPersistentDriver(PersistentDriver):
 
     def retire(self, set_in):
         self.a_list = filter(lambda e: e['e'] not in set_in, self.a_list)
+"""

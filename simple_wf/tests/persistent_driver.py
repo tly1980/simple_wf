@@ -1,5 +1,5 @@
 from django.test import TestCase
-from warehouse.wf.persistent_driver import MemPersistentDriver
+#from warehouse.wf.persistent_driver import MemPersistentDriver
 from warehouse.wf.models import DJPersistentDriver
 from warehouse.wf.exception import (EntryException,
         MultiEntryReturn, EntryAlreadyActivated, EntryNotActivated)
@@ -22,9 +22,33 @@ class EntryExceptionTest(TestCase):
             "MultiEntryReturn: set(['a', 'c', 'b', 'e', 'd'])")
 
 
-class MemPersistentDriverTest(TestCase):
+class DjangoPersistentDriverTest(TestCase):
     def setUp(self):
-        self.p_driver = MemPersistentDriver('test')
+        user = User.objects.create(username='wf_user')
+        self.p_driver = DJPersistentDriver(operator=user)
+
+    def tearDown(self):
+        self.print_log()
+
+    def print_log(self):
+        for l in TransitionLog.objects.all():
+            print l
+
+    def test_log(self):
+        self.p_driver.activate('a')
+        TransitionLog.objects.get(action='activate')
+
+        self.p_driver.complete('a', True)
+        TransitionLog.objects.get(action='complete')
+
+        self.p_driver.disable_andjoin('a')
+        TransitionLog.objects.get(action='disable_andjoin')
+
+        self.p_driver.activate('b')
+        self.p_driver.retire('b')
+        TransitionLog.objects.get(action='retire')
+
+
 
     def test_activate(self):
         self.p_driver.activate('a')
@@ -102,16 +126,3 @@ class MemPersistentDriverTest(TestCase):
         self.p_driver.disable_andjoin(['a', 'b'])
         self.assertEquals(self.p_driver.completed_set(), set(['a', 'b']))
         self.assertEquals(self.p_driver.completed_set(True), set([]))
-
-
-class DjangoPersistentDriverTest(MemPersistentDriverTest):
-    def setUp(self):
-        user = User.objects.create(username='wf_user')
-        self.p_driver = DJPersistentDriver(operator=user)
-
-    def tearDown(self):
-        self.print_log()
-
-    def print_log(self):
-        for l in TransitionLog.objects.all():
-            print l

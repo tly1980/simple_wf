@@ -218,44 +218,71 @@ class DJPersistentDriver(PersistentDriver):
                 action='retire',
                 comments=comments)
 
-    def close_wf(self):
-        if self.wf_instance.state in ['started']:
+    def wf_close(self):
+        if self.wf_instance.state in ['started', 'new']:
             self.wf_instance.state = 'closed'
             self.wf_instance.save()
 
             self.log(
                 level='info',
-                action='close_wf',
+                action='wf_close',
                 comments='workflow closed')
         else:
             raise InvliadWorkflowInstanceStatusChange(self.instance_id,
                 self.wf_instance.state, 'closed')
 
-    def start_wf(self):
+    def wf_start(self):
         if self.wf_instance.state in ['new']:
             self.wf_instance.state = 'started'
             self.wf_instance.save()
 
             self.log(
                 level='info',
-                action='start_wf',
+                action='wf_start',
                 comments='workflow started')
         else:
             raise InvliadWorkflowInstanceStatusChange(self.instance_id,
                 self.wf_instance.state, 'started')
 
-    def cancel_wf(self):
+    def wf_cancel(self):
         if self.wf_instance.state in ['new', 'started']:
             self.wf_instance.state = 'cancelled'
             self.wf_instance.save()
 
             self.log(
                 level='info',
-                action='cancel_wf',
+                action='wf_cancel',
                 comments='workflow cancelled')
         else:
             raise InvliadWorkflowInstanceStatusChange(self.instance_id,
                 self.wf_instance.state, 'cancelled')
+
+    def wf_pause(self):
+        if self.wf_instance.state in ['started']:
+            self.wf_instance.state = 'paused'
+            self.wf_instance.save()
+
+            self.log(
+                level='info',
+                action='wf_pause',
+                comments='workflow paused')
+        else:
+            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+                self.wf_instance.state, 'paused')
+
+    def wf_resume(self):
+        if self.wf_instance.state in ['paused']:
+            self.wf_instance.state = 'started'
+            self.wf_instance.save()
+
+            self.log(
+                level='info',
+                action='wf_resume',
+                comments='workflow resumed')
+        else:
+            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+                self.wf_instance.state, 'started')
+
 
     def wf_state(self):
         return self.wf_instance.state

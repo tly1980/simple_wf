@@ -12,11 +12,6 @@ class WorkflowEngine(object):
         self._router = router
         return self
 
-    def start(self):
-        self.p_driver.start_wf()
-        self.p_driver.activate('_new')
-        self.complete('_new')
-
     def complete(self, entry, data=None, comments=None):
         activated_set = self.p_driver.activated_set()
         if entry not in activated_set:
@@ -59,7 +54,7 @@ class WorkflowEngine(object):
             self.p_driver.disable_andjoin(entries_input, caused_by=entry)
 
         if entry == '_end':
-            self.p_driver.close_wf()
+            self.p_driver.wf_close()
 
     def todo_set(self):
         ret = self.p_driver.activated_set()
@@ -67,3 +62,8 @@ class WorkflowEngine(object):
 
     def wf_state(self):
         return self.p_driver.wf_state()
+
+    def wf_start(self):
+        self.p_driver.wf_start()
+        self.p_driver.activate('_new')
+        self.complete('_new')
