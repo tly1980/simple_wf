@@ -21,7 +21,7 @@ class PersistentDriver(object):
     def disable_andjoin(self, set_in):
         pass
 
-    def retired_actived(self, set_in):
+    def retire(self, set_in):
         pass
 
     def close_wf(self):
@@ -33,7 +33,7 @@ class PersistentDriver(object):
     def cancel_wf(self):
         pass
 
-    def log_transition(input, output):
+    def log(self, *args, **kwargs):
         pass
 
 
@@ -84,5 +84,5 @@ class MemPersistentDriver(PersistentDriver):
             if e['e'] in set_in:
                 e['is_4_routing_eval'] = False
 
-    def retired_actived(self, set_in):
+    def retire(self, set_in):
         self.a_list = filter(lambda e: e['e'] not in set_in, self.a_list)

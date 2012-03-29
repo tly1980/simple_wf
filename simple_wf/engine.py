@@ -19,7 +19,13 @@ class WorkflowEngine(object):
     def complete(self, entry, data=None, comments=None):
         activated_set = self.p_driver.activated_set()
         if entry not in activated_set:
-            raise EntryNotActivated(entry)
+            x = EntryNotActivated(entry)
+            self.p_driver.log(
+                level='error',
+                action='complete',
+                comments=repr(x),
+            )
+            raise x
 
         #remove the involve activate set
         set_to_retired = set([])
@@ -32,7 +38,7 @@ class WorkflowEngine(object):
 
         # if the there is some existing active decedants of the entry,
         # retired them
-        self.p_driver.retired_actived(set_to_retired)
+        self.p_driver.retire(set_to_retired, caused_by=entry)
 
         entries = set([])
         entries.update(self.p_driver.completed_set(True))
@@ -49,7 +55,7 @@ class WorkflowEngine(object):
             entries_input = r.input().entries
             entries_output = r.output().choices()
             self.p_driver.activate(entries=entries_output)
-            self.p_driver.disable_andjoin(entries_input)
+            self.p_driver.disable_andjoin(entries_input, caused_by=entry)
 
     def todo_set(self):
         ret = self.p_driver.activated_set()

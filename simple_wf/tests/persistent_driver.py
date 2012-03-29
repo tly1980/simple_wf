@@ -1,7 +1,11 @@
 from django.test import TestCase
 from warehouse.wf.persistent_driver import MemPersistentDriver
 from warehouse.wf.models import DJPersistentDriver
-from warehouse.wf.exception import EntryException, MultiEntryReturn, EntryAlreadyActivated
+from warehouse.wf.exception import (EntryException,
+        MultiEntryReturn, EntryAlreadyActivated, EntryNotActivated)
+
+from ..models import TransitionLog
+from django.contrib.auth.models import User
 
 
 class EntryExceptionTest(TestCase):
@@ -23,7 +27,6 @@ class MemPersistentDriverTest(TestCase):
         self.p_driver = MemPersistentDriver('test')
 
     def test_activate(self):
-
         self.p_driver.activate('a')
 
         self.assertEquals(self.p_driver.activated_set(), set(['a']))
@@ -32,6 +35,11 @@ class MemPersistentDriverTest(TestCase):
         self.p_driver.activate('b')
         self.assertEquals(self.p_driver.activated_set(), set(['a', 'b']))
         self.assertRaises(EntryAlreadyActivated, self.p_driver.activate, 'b')
+
+    def test_complete_exception(self):
+        self.assertRaises(EntryNotActivated, self.p_driver.complete, 'e1')
+        self.assertRaises(EntryNotActivated, self.p_driver.complete, 'e2')
+        self.assertRaises(EntryNotActivated, self.p_driver.complete, 'e3')
 
     def test_complete(self):
         self.p_driver.activate('a')
@@ -63,7 +71,7 @@ class MemPersistentDriverTest(TestCase):
         self.p_driver.activate('e')
         self.p_driver.activate('f')
         self.assertEquals(self.p_driver.activated_set(), set(['e', 'f']))
-        
+
         self.p_driver.complete('e', True)
         self.assertEquals(self.p_driver.activated_set(), set(['f']))
         self.p_driver.complete('f', True)
@@ -98,4 +106,12 @@ class MemPersistentDriverTest(TestCase):
 
 class DjangoPersistentDriverTest(MemPersistentDriverTest):
     def setUp(self):
-        self.p_driver = DJPersistentDriver()
+        user = User.objects.create(username='wf_user')
+        self.p_driver = DJPersistentDriver(operator=user)
+
+    def tearDown(self):
+        self.print_log()
+
+    def print_log(self):
+        for l in TransitionLog.objects.all():
+            print l
