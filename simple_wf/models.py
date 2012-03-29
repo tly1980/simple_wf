@@ -12,10 +12,13 @@ class InvliadWorkflowInstanceStatusChange(Exception):
         self.current_state = current_state
         self.to_state = to_state
         self.msg = '%s wf_id %s :[%s] - [%s]' % (self.__class__,
-            self.instance_id, self.current_status, self.to_state)
+            self.instance_id, self.current_state, self.to_state)
 
     def __repr__(self):
         return self.msg
+
+    def __str__(self):
+        return self.__repr__()
 
 
 class WorkflowInstance(models.Model):
@@ -219,7 +222,7 @@ class DJPersistentDriver(PersistentDriver):
                 comments=comments)
 
     def wf_close(self):
-        if self.wf_instance.state in ['started', 'new']:
+        if self.wf_instance.state in ['started', 'new', 'paused']:
             self.wf_instance.state = 'closed'
             self.wf_instance.save()
 
@@ -228,11 +231,11 @@ class DJPersistentDriver(PersistentDriver):
                 action='wf_close',
                 comments='workflow closed')
         else:
-            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+            raise InvliadWorkflowInstanceStatusChange(self.wf_instance.id,
                 self.wf_instance.state, 'closed')
 
     def wf_start(self):
-        if self.wf_instance.state in ['new']:
+        if self.wf_instance.state in ['new', 'closed']:
             self.wf_instance.state = 'started'
             self.wf_instance.save()
 
@@ -241,7 +244,7 @@ class DJPersistentDriver(PersistentDriver):
                 action='wf_start',
                 comments='workflow started')
         else:
-            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+            raise InvliadWorkflowInstanceStatusChange(self.wf_instance.id,
                 self.wf_instance.state, 'started')
 
     def wf_cancel(self):
@@ -254,7 +257,7 @@ class DJPersistentDriver(PersistentDriver):
                 action='wf_cancel',
                 comments='workflow cancelled')
         else:
-            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+            raise InvliadWorkflowInstanceStatusChange(self.wf_instance.id,
                 self.wf_instance.state, 'cancelled')
 
     def wf_pause(self):
@@ -267,7 +270,7 @@ class DJPersistentDriver(PersistentDriver):
                 action='wf_pause',
                 comments='workflow paused')
         else:
-            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+            raise InvliadWorkflowInstanceStatusChange(self.wf_instance.id,
                 self.wf_instance.state, 'paused')
 
     def wf_resume(self):
@@ -280,7 +283,7 @@ class DJPersistentDriver(PersistentDriver):
                 action='wf_resume',
                 comments='workflow resumed')
         else:
-            raise InvliadWorkflowInstanceStatusChange(self.instance_id,
+            raise InvliadWorkflowInstanceStatusChange(self.wf_instance.id,
                 self.wf_instance.state, 'started')
 
 

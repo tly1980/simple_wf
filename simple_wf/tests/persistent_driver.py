@@ -4,7 +4,7 @@ from warehouse.wf.models import DJPersistentDriver
 from warehouse.wf.exception import (EntryException,
         MultiEntryReturn, EntryAlreadyActivated, EntryNotActivated)
 
-from ..models import TransitionLog
+from ..models import TransitionLog, InvliadWorkflowInstanceStatusChange
 from django.contrib.auth.models import User
 
 
@@ -33,22 +33,6 @@ class DjangoPersistentDriverTest(TestCase):
     def print_log(self):
         for l in TransitionLog.objects.all():
             print l
-
-    def test_log(self):
-        self.p_driver.activate('a')
-        TransitionLog.objects.get(action='activate')
-
-        self.p_driver.complete('a', True)
-        TransitionLog.objects.get(action='complete')
-
-        self.p_driver.disable_andjoin('a')
-        TransitionLog.objects.get(action='disable_andjoin')
-
-        self.p_driver.activate('b')
-        self.p_driver.retire('b')
-        TransitionLog.objects.get(action='retire')
-
-
 
     def test_activate(self):
         self.p_driver.activate('a')
@@ -126,3 +110,84 @@ class DjangoPersistentDriverTest(TestCase):
         self.p_driver.disable_andjoin(['a', 'b'])
         self.assertEquals(self.p_driver.completed_set(), set(['a', 'b']))
         self.assertEquals(self.p_driver.completed_set(True), set([]))
+
+    def test_wf_log(self):
+        try:
+            self.p_driver.wf_start()
+            TransitionLog.objects.get(action='wf_start')
+        except Exception as x:
+            self.fail('one wf_start should found. %s' % x)
+
+        try:
+            self.p_driver.wf_pause()
+            TransitionLog.objects.get(action='wf_pause')
+        except Exception as x:
+            self.fail('one wf_start should found. %s' % x)
+
+        try:
+            self.p_driver.wf_resume()
+            TransitionLog.objects.get(action='wf_resume')
+        except Exception as x:
+            self.fail('one wf_resume should found. %s' % x)
+
+        try:
+            self.p_driver.wf_close()
+            TransitionLog.objects.get(action='wf_close')
+        except Exception as x:
+            self.fail('one wf_close should found. %s' % x)
+
+    def test_log(self):
+        try:
+            self.p_driver.activate('a')
+            TransitionLog.objects.get(action='activate')
+        except Exception as x:
+            self.fail('one activate log should found. %s' % x)
+
+        try:
+            self.p_driver.complete('a', True)
+            TransitionLog.objects.get(action='complete')
+        except Exception as x:
+            self.fail('one activate log should found %s' % x)
+
+        try:
+            self.p_driver.disable_andjoin('a')
+            TransitionLog.objects.get(action='disable_andjoin')
+        except Exception as x:
+            self.fail('one disable_andjoin log should found %s' % x)
+
+        try:
+            self.p_driver.activate('b')
+            self.p_driver.retire('b')
+            TransitionLog.objects.get(action='retire')
+        except Exception as x:
+            self.fail('one retire log should found %s' % x)
+
+    def test_wf_state_change(self):
+        #when new
+        self.assertEqual(self.p_driver.wf_state(), 'new')
+        self.assertRaises(InvliadWorkflowInstanceStatusChange,
+            self.p_driver.wf_pause)
+        self.assertRaises(InvliadWorkflowInstanceStatusChange,
+            self.p_driver.wf_resume)
+
+        #started -> started not allow
+        self.p_driver.wf_start()
+        self.assertEqual(self.p_driver.wf_state(), 'started')
+        self.assertRaises(InvliadWorkflowInstanceStatusChange,
+            self.p_driver.wf_start)
+
+        #paused -> started allowed
+        self.p_driver.wf_pause()
+        self.assertEqual(self.p_driver.wf_state(), 'paused')
+        self.p_driver.wf_resume()
+        self.assertEqual(self.p_driver.wf_state(), 'started')
+
+        #paused -> closed allowed
+        self.p_driver.wf_pause()
+        self.assertEqual(self.p_driver.wf_state(), 'paused')
+        self.p_driver.wf_close()
+        self.assertEqual(self.p_driver.wf_state(), 'closed')
+
+        #closed -> started allowed
+        self.p_driver.wf_start()
+        self.assertEqual(self.p_driver.wf_state(), 'started')
