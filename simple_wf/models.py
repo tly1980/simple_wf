@@ -22,7 +22,7 @@ class InvliadWorkflowInstanceStatusChange(Exception):
 
 
 class WorkflowInstance(models.Model):
-    STATUS_CHOICES = (
+    STAT_CHOICES = (
         (u'new', u'new'),
         (u'started', u'started'),
         (u'finished', u'finished'),
@@ -30,7 +30,7 @@ class WorkflowInstance(models.Model):
         (u'cancelled', u'cancelled'),
     )
     workflow = models.CharField(max_length=512)
-    state = models.CharField(max_length=32, choices=STATUS_CHOICES)
+    state = models.CharField(max_length=32, choices=STAT_CHOICES)
 
 
 class Entry(models.Model):
