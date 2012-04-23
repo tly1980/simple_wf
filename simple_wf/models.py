@@ -92,7 +92,7 @@ class DJPersistentDriver(PersistentDriver):
             self.wf_instance = WorkflowInstance.objects.create(workflow=wf_name,
                 state='new')
         else:
-            self.wf_instance = WorkflowInstance.objects.filter(id=instance_id)
+            self.wf_instance = WorkflowInstance.objects.get(id=instance_id)
 
     def activated_set(self):
         ret = set([])
