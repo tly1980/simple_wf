@@ -67,3 +67,6 @@ class WorkflowEngine(object):
         self.p_driver.wf_start()
         self.p_driver.activate('_new')
         self.complete('_new')
+
+    def wf_close(self):
+        self.p_driver.wf_close()
