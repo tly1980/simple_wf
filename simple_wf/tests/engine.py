@@ -18,7 +18,8 @@ class WorkflowEngineTest(TestCase):
         self.wf_engine = WorkflowEngine(DJPersistentDriver(operator=user), self.router)
 
     def tearDown(self):
-        self.print_log()
+        return
+        #self.print_log()
 
 
     def print_log(self):
@@ -127,7 +128,7 @@ class WorkflowEngineTest(TestCase):
         self.assertEqual(self.wf_engine.todo_set(), set(['e3', 'e4']))
         self.wf_engine.complete('e4')
         self.assertEqual(self.wf_engine.todo_set(), set(['_end', 'e3']))
-        
+
         #wf should close automatically when _end completed
         self.wf_engine.complete('_end')
         self.assertEqual(self.wf_engine.wf_state(), 'closed')

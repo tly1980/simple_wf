@@ -28,7 +28,8 @@ class DjangoPersistentDriverTest(TestCase):
         self.p_driver = DJPersistentDriver(operator=user)
 
     def tearDown(self):
-        self.print_log()
+        return
+        #self.print_log()
 
     def print_log(self):
         for l in TransitionLog.objects.all():
