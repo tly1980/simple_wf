@@ -63,10 +63,13 @@ class WorkflowEngine(object):
     def wf_state(self):
         return self.p_driver.wf_state()
 
-    def wf_start(self):
-        self.p_driver.wf_start()
-        self.p_driver.activate('_new')
-        self.complete('_new')
+    def wf_start(self, from_scratch=True):
+        if from_scratch:
+            self.p_driver.wf_start()
+            self.p_driver.activate('_new')
+            self.complete('_new')
+        else:
+            self.p_driver.wf_start()
 
     def wf_close(self):
         self.p_driver.wf_close()
