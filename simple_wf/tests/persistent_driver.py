@@ -1,7 +1,7 @@
 from django.test import TestCase
 #from warehouse.wf.persistent_driver import MemPersistentDriver
-from warehouse.wf.models import DJPersistentDriver
-from warehouse.wf.exception import (EntryException,
+from ..models import DJPersistentDriver
+from ..exception import (EntryException,
         MultiEntryReturn, EntryAlreadyActivated, EntryNotActivated)
 
 from ..models import TransitionLog, InvliadWorkflowInstanceStatusChange

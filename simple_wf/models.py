@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from warehouse.wf.exception import EntryAlreadyActivated, EntryNotActivated
-from warehouse.wf.persistent_driver import PersistentDriver
+from .exception import EntryAlreadyActivated, EntryNotActivated
+from .persistent_driver import PersistentDriver
 # Create your models here.
 
 
