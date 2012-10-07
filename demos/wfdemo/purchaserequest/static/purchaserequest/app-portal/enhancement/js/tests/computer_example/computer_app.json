@@ -1,0 +1,16 @@
+{	
+   "singleton": false,	
+   "js_url": "computer.js",
+   "app_id": "DE37BB91-1467-4EFD-890E-77D9068ACFF6",
+   "name": "Computer Example App",
+   "tpl_url":[
+    	"win_content.html",
+    	"win_bottom.html"
+    ],
+	"win_params":{
+    	"win_title": "Computer Example Win"
+    },
+
+    "icon": "/static/merchant/app-portal/assets/images/icons/icon_22_computer.png",
+    "icon_small": "/static/merchant/assets/images/icons/icon_16_computer.png"
+}

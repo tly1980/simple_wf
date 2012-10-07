@@ -1,0 +1,3 @@
+pip install django
+# if you are using django 1.4, please use this version of piston
+pip install -e hg+https://bitbucket.org/jespern/django-piston/@7c90898072ce#egg=django-piston

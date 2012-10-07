@@ -1,0 +1,44 @@
+<div class="window_aside">
+	<p class="add_req">
+		<a href="#pr/create">Add New Request</a>
+	</p>
+
+	<p class="req_filter_wrap">
+		<select name="req_filter">
+			<option value="created_by_me">Created by me</option>
+			<option value="pending_on_manager_check">Pending on Manager</option>
+			<option value="pending_on_admin_check">Pending on Admin</option>
+      <option value="confirm_received">Received Confirm</option>
+			<option value="all">All</option>
+		</select>
+	</p>
+
+	<p class="back_to_filter">
+		<a class="back_to_filter" href="#">Back to filter</a>
+	</p>
+
+  </div>
+  
+</div>
+
+
+<div class="window_main">
+  <div class="req_browser"></div>
+  <div class="req_dtview">
+  		<div class="req_view">
+  		</div>
+  </div>
+  <div class="req_logview">
+  		<table class="data">
+  			<thead>
+  				<th>Timestamp</th>
+  				<th>Action</th>
+  				<th>Operator</th>
+  				<th>Result</th>
+  				<th>Comments</th>
+  			</thead>
+  			<tbody class="log_table">
+  			</tbody>
+  		</table>
+  </div>
+</div>
