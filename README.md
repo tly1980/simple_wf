@@ -11,6 +11,7 @@ High-lights:
  + split (and-split / xor-split ) 
 + conditions routing:
 + intuitive API, easy to use
++ Django-ORM based
 
 Sample Code:
 ------------
