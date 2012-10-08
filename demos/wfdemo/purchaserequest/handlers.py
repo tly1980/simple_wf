@@ -16,6 +16,7 @@ action_display_dict = {
     'confirm_received': 'Received Confirmed'
 }
 
+
 def wfengine_from_pr(user, pr):
     p_driver = DJPersistentDriver(
         operator=user,
@@ -60,7 +61,6 @@ class PRHandler(BaseHandler):
 
         if filter_param == 'all':
             return PurchaseRequest.objects.all()
-
 
     def read(self, request, **kwargs):
         pr_id = kwargs.get('pr_id')
@@ -127,7 +127,6 @@ class PRHandler(BaseHandler):
                     action='modify request',
                     comments='old_val: %s' % old_val,
                     result="success")
-
 
             except PurchaseRequest.DoesNotExist:
                 return rc.NOT_FOUND
@@ -243,7 +242,6 @@ class PRWFHandler(BaseHandler):
         return rc.BAD_REQUEST
 
 
-
 class WFLogHandler(BaseHandler):
     allowed_methods = ('GET', )
 
@@ -264,6 +262,7 @@ class WFLogHandler(BaseHandler):
 
 
 import requests
+
 
 def notify_update(prequest, user):
     params = {
