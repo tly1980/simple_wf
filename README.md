@@ -11,8 +11,13 @@ High-lights:
  + split (and-split / xor-split ) 
 + conditions routing:
 + intuitive API, easy to use
-+ Django-ORM based
++ Abstract persisent layer ( currently supports Django-ORM only )
 
-Sample Code:
-------------
+Example Code:
+=============
+
+1. An Easy Enough Example
+-------------------------
+
+
 
