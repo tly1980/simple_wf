@@ -2,7 +2,7 @@
    "singleton": true,	
    "js_url": "app.js",
    "app_id": "20D2EF7C-053B-403E-B846-EA6E1EC39183",
-   "name": "Purchase Request abc",
+   "name": "Purchase Request",
    "tpl_url":[
     	"win_content.html",
     	"win_bottom.html",
