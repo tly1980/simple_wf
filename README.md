@@ -32,7 +32,7 @@ Metaphor
 
 The workflow can be represent in code like this:
 
- ```python
+```python
 router = Router(
     Route().any('_new').next('check'),
     Route().any('check').next('pass').test(lambda d: d.get('score') >= 60),
@@ -80,8 +80,8 @@ class SimpleConditionRoutingTest(TestCase):
 
 ```
 
-Split and Join
-==============
+Split
+=====
 
 ![alt text](https://raw.github.com/tly1980/simple_wf/develop/charts/split.png "Split")
 
@@ -89,17 +89,68 @@ Split and Join
 
 All the inputs that lead to this activity have to be completed in order to enable this output to work.
 ```python
-# if you want 'c' to be enabled, you will have 
-# complete 'a' and 'b' first
-Route().exact('a', 'b').next('c')
+router = Router(
+  ...,
+  # complting 'a' will enable 'c', 'd', 'e'
+  # Alternatively, can use: Route().any('a').next('c', 'd', 'e') 
+  Route().exact('a').next('c', 'd', 'e'),
+  
+  ...
+)
 ```
 
 
 + Xor-Split
 
-Just one of the input that lead to this output has to be completed in order to enable this output to work.
+
 ```python
-# if you want 'c' to be enabled, you just 
-# complete either 'a' or 'b'
-Route().any('a', 'b').next('c')
+router = Router(
+    ...
+    Route().any('check').next('pass').test(lambda d: d.get('score') >= 60),
+    Route().any('check').next('not_pass').test(lambda d: d.get('score') < 60),
+    ...
+)
+```
+
+Join
+====
+
+![alt text](https://raw.github.com/tly1980/simple_wf/develop/charts/join.png "Join")
+
++ And-Join
+
+```python
+# if you want 'c', to be enabled, you have to 
+# complete 'a','b' and 'c'
+router = Router(
+    ...
+    Route().exact('a', 'b', 'c').next('d'),
+    ...
+)
+```
+
++ Xor-Join
+
+```python
+# just complete any of 'a', 'b', 'c' will enable
+# 'd'
+router = Router(
+    ...
+    Route().any('a', 'b', 'c').next('d'),
+    ...
+)
+```
+
+Or you could use following code:
+
+```python
+# just complete any of 'a', 'b', 'c' will enable
+# 'd'
+router = Router(
+    ...
+    Route().any('a').next('d'),
+    Route().any('b').next('d'),
+    Route().any('c').next('d'),
+    ...
+)
 ```
