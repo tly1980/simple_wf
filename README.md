@@ -13,11 +13,20 @@ High-lights:
 + intuitive API, easy to use
 + Abstract persisent layer ( currently supports Django-ORM only )
 
-Example Code:
-=============
 
-1. An Easy Enough Example 
--------------------------
+Metaphor
+--------
++ Route: identical to transition. Every route contains input and output.
++ Router: composed by a set of routes, represent the workflow.
+  Router will select the right route based on input state, just as workflow transition.
++ Workflow Engine: Driven by workflow and current transition state.
+
+### Route Input:
+ any(state1, state2, ... ) or exact( state1, state2, ...)
+### Route Output:
+ next(state1, state2, ... )
+
+### Example 
 
 ![alt text](https://docs.google.com/drawings/pub?id=1kQf4gLW6HDnLJ10RwopnG5xJHeJ2QE8--3cwVNG49sw&w=960&h=720 "Conditional Rounting")
 
@@ -31,45 +40,4 @@ router = Router(
     Route().any('pass').next('_end'),
     Route().any('not_pass').next('_end'),
 )
-```
-
-Following code demo the basic step of using the workflow.
-
-1.)  When score is greater than 60
-```python
-wf_engine = WorkflowEngine(DJPersistentDriver(operator=user), router)
-
-# start the workflow
-wf_engine.wf_start()
-
-# the first todo should be "check"
-assert wf_engine.todo_set() == set(['check'])
-
-# provide the score to the complete function, it will choose next
-# appropriate workflow activity
-wf_engine.complete('check', data={'score': 60})
-
-# when score is less than 60, the only proper activity is pass
-assert wf_engine.todo_set() == set(['pass'])
-
-wf_engine.complete('pass')
-assert wf_engine.todo_set() == set(['_end'])
-
-#wf should close automatically when _end completed
-wf_engine.complete('_end')
-assert wf_engine.wf_state() == 'closed'
-```
-
-2) when score is less than 60
-```python
-...
-...
-# provide the score to the complete function, it will choose next
-# appropriate workflow activity
-wf_engine.complete('check', data={'score': 59})
-
-# when score is less than 60, the only proper activity is pass
-assert wf_engine.todo_set() == set(['not_pass'])
-...
-...
 ```
