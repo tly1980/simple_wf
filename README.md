@@ -35,7 +35,7 @@ router = Router(
 
 Following code demo the basic step of using the workflow.
 
-1.)  When score is gt >= 60
+1.)  When score is greater than 60
 ```python
 wf_engine = WorkflowEngine(DJPersistentDriver(operator=user), router)
 
@@ -60,7 +60,7 @@ wf_engine.complete('_end')
 assert wf_engine.wf_state() == 'closed'
 ```
 
-2) when score is less then 60
+2) when score is less than 60
 ```python
 ...
 ...
