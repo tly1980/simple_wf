@@ -80,6 +80,26 @@ class SimpleConditionRoutingTest(TestCase):
 
 ```
 
+Split and Join
+==============
+
+![alt text](https://raw.github.com/tly1980/simple_wf/develop/charts/split.png "Split")
+
++ And-Split
+
+All the inputs that lead to this activity have to be completed in order to enable this output to work.
+```python
+# if you want 'c' to be enabled, you will have 
+# complete 'a' and 'b' first
+Route().exact('a', 'b').next('c')
+```
 
 
++ Xor-Split
 
+Just one of the input that lead to this output has to be completed in order to enable this output to work.
+```python
+# if you want 'c' to be enabled, you just 
+# complete either 'a' or 'b'
+Route().any('a', 'b').next('c')
+```
