@@ -132,8 +132,7 @@ router = Router(
 + Xor-Join
 
 ```python
-# just complete any of 'a', 'b', 'c' will enable
-# 'd'
+# just complete any of 'a', 'b', 'c' will enable 'd'
 router = Router(
     ...
     Route().any('a', 'b', 'c').next('d'),
@@ -144,8 +143,7 @@ router = Router(
 Or you could use following code:
 
 ```python
-# just complete any of 'a', 'b', 'c' will enable
-# 'd'
+# just complete any of 'a', 'b', 'c' will enable 'd'
 router = Router(
     ...
     Route().any('a').next('d'),
