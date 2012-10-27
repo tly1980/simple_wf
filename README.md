@@ -69,7 +69,7 @@ assert wf_engine.wf_state() == 'closed'
 wf_engine.complete('check', data={'score': 59})
 
 # when score is less than 60, the only proper activity is pass
-assert wf_engine.todo_set() == set(['notpass'])
+assert wf_engine.todo_set() == set(['not_pass'])
 ...
 ...
 ```
