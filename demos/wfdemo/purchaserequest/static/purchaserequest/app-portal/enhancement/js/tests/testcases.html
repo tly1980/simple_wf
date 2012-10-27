@@ -1,0 +1,83 @@
+<!DOCTYPE>
+<html>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/json2/20110223/json2.js"></script>
+<script src="../tload.js" type="text/javascript"></script>
+<script src="../portal.js" type="text/javascript"></script>
+<script type="text/javascript" src="http://code.jquery.com/qunit/git/qunit.js"></script>
+
+
+<link rel="stylesheet" href="http://code.jquery.com/qunit/git/qunit.css" type="text/css" media="screen" />
+
+
+<head></head>
+
+<body>
+   <h1 id="qunit-header">QUnit example</h1>
+ 	<h2 id="qunit-banner"></h2>
+ 	<div id="qunit-testrunner-toolbar"></div>
+ 	<h2 id="qunit-userAgent"></h2>
+ 	<ol id="qunit-tests"></ol>
+ 	<div id="qunit-fixture">test markup, will be hidden</div>
+</body>
+<script>
+
+(function(){
+    //this test should run first
+    test("resource", function(){
+        var res_data = APP_PORTAL.resource('/enhancement/js/resource.json');
+
+        equal(res_data.name, 'noname app', 'app_name: "noname app"');
+        equal(res_data.win_title, 'noname win', 'win_title: "noname win"');
+        equal(res_data.app_icon, '/enhancement/js/../../assets/images/icons/icon_22_disc.png',
+             'app_icon: "/enhancement/js/../../assets/images/icons/icon_22_disc.png"');
+        equal(res_data.app_icon_small, '/enhancement/js/../../assets/images/icons/icon_16_disc.png',
+             'app_icon: "/enhancement/js/../../assets/images/icons/icon_16_disc.png"');
+
+
+        ok(res_data.tpl.win_bottom.indexOf('<div') >= 0, 
+                'win_bottom should contain: div');
+        ok(res_data.tpl.win_bottom.indexOf('</div>') >= 0, 
+                'win_bottom should contain: div');
+        ok(res_data.tpl.win_content.indexOf('<div') >= 0,
+                'win_content should contain: <div');
+        ok(res_data.tpl.win_content.indexOf('</div>') >= 0, 
+                'win_content should contain: </div>');
+
+        console.log('res_data', res_data);
+    });
+
+    test("app_resource", function(){
+        var res_data = APP_PORTAL.resource('/enhancement/js/resource.json');
+        var app_data = APP_PORTAL.app_resource(
+            '/enhancement/js/tests/computer_example/computer_app.json');
+        console.log('app_data', app_data);
+
+        equal(app_data.name, 'Computer Example App', 'name: "Computer Example App"');
+        equal(app_data.win_title, 'Computer Example Win', 'win_title: "Computer Example Win"');
+
+
+        equal(app_data.tpl_url.length, 5, 'url length should be 5 (3 from resource, 2 from app json)');
+        equal(app_data.js_url, 'computer.js',
+            'contains js url: computer.js');
+        ok(app_data.tpl.win_bottom.indexOf('<div') >= 0, 
+                'win_bottom should contain: div');
+        ok(app_data.tpl.win_bottom.indexOf('</div>') >= 0, 
+                'win_bottom should contain: div');
+
+        ok(app_data.tpl.win_content.indexOf('<th class="shrink">') >= 0,
+                'win_content should contain: <th class="shrink">');
+        ok(app_data.tpl.win_content.indexOf('</th>') >= 0, 
+                'win_content should contain: </th>');
+    });
+
+
+
+
+        
+    
+
+    		
+})();
+</script>
+</html>

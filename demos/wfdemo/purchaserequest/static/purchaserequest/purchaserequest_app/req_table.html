@@ -1,0 +1,23 @@
+<div>
+	<table class="data">
+		<thead>
+			<th>Product</th>
+			<th>Amount</th>
+			<th>Request by</th>
+			<th>Last Action</th>
+			<th>Last Action Time</th>
+		</thead>
+		<tbody>
+		{{#pr_lst}}
+		<tr pr_id="{{id}}">
+			<td><a href="{{product_url}}">{{product_name}}</a></td>
+			<td>{{amount}}</td>
+			<td>{{#last_action_taker}} {{username}} {{/last_action_taker}}</td>
+			<td>{{last_action}}</td>
+			<td>{{last_action_time}}</td>
+		</tr>
+		{{/pr_lst}}
+
+		</tbody>
+	</table>
+</div>

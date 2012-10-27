@@ -12,15 +12,11 @@ class WorkflowEngineTest(TestCase):
 
     def setUp(self):
         self.router = Router()
-        #self.wf_engine = WorkflowEngine(MemPersistentDriver('test'),
-        #     self.router)
         user = User.objects.create(username='wf_user')
         self.wf_engine = WorkflowEngine(DJPersistentDriver(operator=user), self.router)
 
     def tearDown(self):
-        return
-        #self.print_log()
-
+        self.print_log()
 
     def print_log(self):
         for l in TransitionLog.objects.all():
@@ -96,7 +92,6 @@ class WorkflowEngineTest(TestCase):
         #wf should close automatically when _end completed
         self.wf_engine.complete('_end')
         self.assertEqual(self.wf_engine.wf_state(), 'closed')
-
 
     def test_todo2(self):
         router = Router(

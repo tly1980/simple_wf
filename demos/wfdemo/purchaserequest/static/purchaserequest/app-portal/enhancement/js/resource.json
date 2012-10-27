@@ -1,0 +1,17 @@
+{
+	"singleton":true,
+    "icon": "/static/merchant/app-portal/assets/images/icons/icon_22_disc.png",
+    "icon_small": "/static/merchant/app-portal/assets/images/icons/icon_16_disc.png",
+    "name": "noname app",
+    "tpl_url": [
+        "tpl/icon.html",
+        "tpl/dock.html",
+        "tpl/win.html",
+        "tpl/win_bottom.html",
+        "tpl/win_content.html"
+    ],
+    "win_params":{
+    	"win_title": "noname win",
+    	"win_usage": "app_win"
+    }
+}

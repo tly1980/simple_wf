@@ -1,0 +1,22 @@
+{	
+   "singleton": true,	
+   "js_url": "app.js",
+   "app_id": "20D2EF7C-053B-403E-B846-EA6E1EC39183",
+   "name": "Purchase Request",
+   "tpl_url":[
+    	"win_content.html",
+    	"win_bottom.html",
+      "req_editor.html",
+      "req_new.html",
+      "req_table.html",
+      "wf_dlg.html",
+      "log.html"
+    ],
+	"win_params":{
+    	"win_title": "Purchase Request",
+      "max_win_at_starting": true
+    },
+
+    "icon": "/static/purchaserequest/app-portal/assets/images/icons/icon_22_computer.png",
+    "icon_small": "/static/purchaserequest/app-portal/assets/images/icons/icon_16_computer.png"
+}

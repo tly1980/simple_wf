@@ -10,7 +10,7 @@ from ..statemachine import Route, Router, Any, Exact, always_pass
 
 
 class RouterTest(TestCase):
-    def test_match_entry(self):
+    def test_match(self):
         router = Router(
             Route().any('_new').next('e1'),
             Route().any('e1').next('e2'),
@@ -37,44 +37,7 @@ class RouterTest(TestCase):
 
         self.assertEquals(router.match_entry(['a', 'b', 'c', 'd']), set(['ab', 'ac', 'bc', '_end']))
 
-    def test_next_multi(self):
-        router = Router(
-            Route().any('_new').next('e1', 'e1.1', 'e1.2'),
-            Route().any('e1').next('e2', 'e2.1'),
-            Route().any('e1.1').next('e2', '_end'),
-            Route().any('e1.2').next('e2.1', '_end'),
-            Route().any('e2').next('_end'),
-            Route().any('e2.1').next('_end'),
-        )
-
-        self.assertEquals(router.match_entry(['_new']), set(['e1', 'e1.1', 'e1.2']))
-        self.assertEquals(router.match_entry(['e1']), set(['e2.1', 'e2']))
-        self.assertEquals(router.match_entry(['e1.1']), set(['e2', '_end']))
-        self.assertEquals(router.match_entry(['e1.2']), set(['e2.1', '_end']))
-        self.assertEquals(router.match_entry(['e2']), set(['_end']))
-        self.assertEquals(router.match_entry(['e2.1']), set(['_end']))
-
-    def test_exact_routing(self):
-        router = Router(
-            Route().any('_new').next('e1', 'e1.1', 'e1.2', 'e1.3'),
-            Route().exact('e1.1', 'e1.2').next('e2'),
-            Route().any('e1', 'e1.3').next('e2'),
-            Route().any('e2').next('end'),
-        )
-
-        self.assertEquals(router.match_entry(['_new']), set(['e1', 'e1.1', 'e1.2', 'e1.3']))
-        self.assertEquals(router.match_entry(['e1.1', 'e1.2']), set(['e2']))
-        self.assertEquals(router.match_entry(['e1.3']), set(['e2']))
-        self.assertEquals(router.match_entry(['e1']), set(['e2']))
-        self.assertEquals(router.match_entry(['e2']), set(['end']))
-
-        self.assertEquals(router.match(['_new']), set(['e1', 'e1.1', 'e1.2', 'e1.3']))
-        self.assertEquals(router.match(['e1.1', 'e1.2']), set(['e2']))
-        self.assertEquals(router.match(['e1.3']), set(['e2']))
-        self.assertEquals(router.match(['e1']), set(['e2']))
-        self.assertEquals(router.match(['e2']), set(['end']))
-
-    def test_match(self):
+    def test_match_condition(self):
         router = Router(
             Route().any('_new').next('check'),
             Route().any('check').next('not_pass').test(lambda d: d.get('score') < 60),
@@ -85,6 +48,54 @@ class RouterTest(TestCase):
         self.assertEquals(router.match(['check'], {'score': 100}), set(['pass']))
         self.assertEquals(router.match(['check'], {'score': 59}), set(['not_pass']))
         self.assertEquals(router.match(['check'], {'score': -60}), set(['not_pass']))
+
+    def test_any_next(self):
+        """
+        Test the routing for multiple
+        """
+        router = Router(
+            Route().any('_new').next('any1', 'any1.1', 'any1.2'),
+            Route().any('any1').next('any2', 'any2.1'),
+            Route().any('any1.1').next('any2', '_end'),
+            Route().any('any1.2').next('any2.1', '_end'),
+            Route().any('any2').next('_end'),
+            Route().any('any2.1').next('_end'),
+        )
+
+        self.assertEquals(router.match_entry(['_new']), set(['any1', 'any1.1', 'any1.2']))
+        self.assertEquals(router.match_entry(['any1']), set(['any2.1', 'any2']))
+        self.assertEquals(router.match_entry(['any1.1']), set(['any2', '_end']))
+        self.assertEquals(router.match_entry(['any1.2']), set(['any2.1', '_end']))
+        self.assertEquals(router.match_entry(['any2']), set(['_end']))
+        self.assertEquals(router.match_entry(['any2.1']), set(['_end']))
+
+    def test_exact_next(self):
+        """
+        Test the routing for exact match
+        """
+        router = Router(
+            Route().any('_new').next('exact1', 'exact2', 'any1', 'any2'),
+            Route().exact('exact1', 'exact2').next('step2'),
+            Route().any('any1', 'any2').next('step2'),
+            Route().any('step2').next('_end'),
+        )
+
+        self.assertEquals(router.match_entry(['_new']), set(['exact1', 'exact2', 'any1', 'any2']))
+        self.assertEquals(router.match_entry(['exact1', 'exact2']), set(['step2']))
+        self.assertEquals(router.match_entry(['any1']), set(['step2']))
+        self.assertEquals(router.match_entry(['any2']), set(['step2']))
+
+        # test the combination of exactN and anyN
+        self.assertEquals(router.match(['exact1', 'any1']), set(['step2']))
+        self.assertEquals(router.match(['exact2', 'any1']), set(['step2']))
+        self.assertEquals(router.match(['exact1', 'any2']), set(['step2']))
+        self.assertEquals(router.match(['exact2', 'any2']), set(['step2']))
+
+        # test the combination of anyN and anyN
+        self.assertEquals(router.match(['any1', 'any2']), set(['step2']))
+
+        # test step2
+        self.assertEquals(router.match(['step2']), set(['_end']))
 
     def test_involves_decendants(self):
         router = Router(
@@ -98,9 +109,10 @@ class RouterTest(TestCase):
             Route().exact('cA.1.1', 'cA.1.2').next('_end'),
             Route().any('pass', 'not_pass').next('_end'),
         )
-        
+
         s = router.involve_decendants('p')
 
+        # assert 
         self.assertTrue('check' not in s)
         self.assertTrue('pass' not in s)
         self.assertTrue('not_pass' not in s)
@@ -215,6 +227,10 @@ class RouterTest(TestCase):
 
 
 class RouteTest(TestCase):
+    """
+    TestSuite for Route
+    """
+
     def test_exact(self):
         r1 = Route().exact('a', 'b', 'c', 'd', 'e')
         self.assertEqual(len(r1.input().entries), 5)
@@ -228,6 +244,9 @@ class RouteTest(TestCase):
             Any('a', 'b'))
 
     def test_is_andjoin(self):
+        """
+        Test whether the route is and-join
+        """
         r1 = Route().exact('a', 'b', 'c', 'd', 'e')
         self.assertTrue(r1.is_andjoin())
 
